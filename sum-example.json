@@ -1,0 +1,27 @@
+{
+    "type": "function-call",
+    "function-object": {
+        "type": "path-reference",
+        "path": [
+            "plus-decimal"
+        ]
+    },
+    "arguments": [
+        22e1,
+        42,
+        {
+            "type": "function-call",
+            "function-object": {
+                "type":"path-reference",
+                "path": [
+                    "plus-decimal"
+                ]
+            },
+            "arguments": [
+                10,
+                12
+            ]
+        },
+        15
+    ]
+}

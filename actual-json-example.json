@@ -1,0 +1,144 @@
+{
+    "type": "function-definition",
+    "parameters": [
+        {
+            "type": "parameter-declaration",
+            "parameter-name": "some",
+            "parameter-type": "System.String"
+        },
+        {
+            "type": "parameter-declaration",
+            "parameter-name": "another",
+            "parameter-type": "System.String"
+        }
+    ],
+    "return-type": "System.String",
+    "body": [
+        {
+            "type": "function-call",
+            "function-object": {
+                "type": "path-reference",
+                "path": [
+                    "System",
+                    "Console",
+                    "WriteLine"
+                ]
+            },
+            "arguments": ["hello \" world ", 42.01, true,
+                {
+                    "type": "function-call",
+                    "function-object": {
+                        "type": "path-reference",
+                        "path": [
+                            "example"
+                        ]
+                    },
+                    "arguments": [10, 20]
+                }
+            ]
+        },
+        {
+            "type": "path-reference",
+            "path": [
+                "player",
+                "sword",
+                "diamand-socket"
+            ]
+        },
+        {
+            "type": "array",
+            "statements": [
+                1, 
+                2, 
+                3,
+                {
+                    "type": "function-call",
+                    "function-object": {
+                        "type": "path-reference",
+                        "path": [
+                            "+"
+                        ]
+                    },
+                    "arguments": [
+                        22,
+                        42,
+                        15
+                    ]
+                }
+            ]
+
+        },
+        {
+            "type": "variable-declaration",
+            "variable-type": "var",
+            "variable-name": "temp",
+            "value-expression": {
+                "type": "function-call",
+                "function-object": {
+                    "type": "path-reference",
+                    "path": [
+                        "global",
+                        "+"
+                    ]
+                },
+                "arguments": [
+                    10,
+                    {
+                        "type": "function-call",
+                        "function-object": {
+                            "type": "path-reference",
+                            "path": [
+                                "example"
+                            ]
+                        },
+                        "arguments": [10, 20]
+                    }
+                ] 
+            }
+        },
+        {
+            "type": "function-call",
+            "function-object": {
+                "type": "path-reference",
+                "path": [
+                    "+"
+                ]
+            },
+            "arguments": [
+                10,
+                {
+                    "type": "function-call",
+                    "function-object": {
+                        "type": "path-reference",
+                        "path": [
+                            "example"
+                        ]
+                    },
+                    "arguments": [10, 20]
+                }
+            ]
+        },
+        {
+            "type": "set",
+            "address": {
+                "type": "path-reference",
+                "path": [
+                    "sword",
+                    "socket"
+                ]
+            },
+            "value-expression": {
+                "type": "path-reference",
+                "path": [
+                    "System",
+                    "Console",
+                    "WriteLine"
+                ]
+            }
+        },
+        {
+            "type": "return-statement",
+            "return-expression": "hello"
+        }
+    ]
+}
