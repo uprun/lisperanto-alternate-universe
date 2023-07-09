@@ -10,6 +10,8 @@ class Lisperanto
 
     static List<EvaluationState> evaluation_stack = new List<EvaluationState>();
     static Dictionary<JsonElement, Dictionary<string, object>> evaluation_result = new Dictionary<JsonElement, Dictionary<string, object>>();
+
+    static List<EvaluationState> recently_evaluated = new List<EvaluationState>();
     static async Task Main(string[] args)
     {
         var eval_res = await evaluate_file("sum-example.json");
@@ -24,6 +26,14 @@ class Lisperanto
             evaluation_stack.Remove(top);
             var result = evaluate_element(top);
             print_evaluation(result);
+            Console.Out.Flush();
+
+            var recent = recently_evaluated.LastOrDefault();
+            if (recent != null && recent.parent != null)
+            {
+                evaluation_stack.Add(recent.parent);
+                recently_evaluated.Remove(recent);
+            }
 
             System.Threading.Thread.Sleep(millisecondsTimeout: 1);
         }
@@ -43,8 +53,14 @@ static Dictionary<string, object> evaluate_plus_decimal(EvaluationState state)
     var result = new Dictionary<string, object>();
     result["type"] = "decimal-result";
     decimal accumulator = 0;
+    bool partially_evaluated = false;
     foreach(var element in state.dependencies)
     {
+        if (evaluation_result.ContainsKey(element.starting_element) == false)
+        {
+            partially_evaluated = true;
+            continue;
+        }
         var possibly_decimal_result = evaluation_result[element.starting_element];
         if ( (possibly_decimal_result["type"] as string) == "decimal-result" )
         {
@@ -60,9 +76,11 @@ static Dictionary<string, object> evaluate_plus_decimal(EvaluationState state)
                 result["failed-parsing-for"] = new List<string?>();
             }
             (result["failed-parsing-for"] as List<string?>)?.Add(possibly_decimal_result["raw"] as string);
+            partially_evaluated = true;
             continue;
         }
     }
+    result["partially-evaluated"] = partially_evaluated;
     return result;
 }
 
@@ -85,6 +103,8 @@ static Dictionary<string, object> evaluate_element(EvaluationState state)
             result["raw"] = raw;
         }
         evaluation_result[element] = result;
+        state.evaluation = result;
+        recently_evaluated.Add(state);
         return result;
     }
     if (element.ValueKind == JsonValueKind.Object)
@@ -97,6 +117,8 @@ static Dictionary<string, object> evaluate_element(EvaluationState state)
                 {
                     var result = evaluate_plus_decimal(state);
                     evaluation_result[element] = result;
+                    state.evaluation = result;
+                    recently_evaluated.Add(state);
                     return result;
                 }
                 else
@@ -104,11 +126,13 @@ static Dictionary<string, object> evaluate_element(EvaluationState state)
                     evaluation_stack.Add(state);
                     if(element.TryGetProperty("arguments", out JsonElement argumentsElement))
                     {
+                        // TODO arguments can be evaluated in parallel
                         var arguments_for_function_call = argumentsElement.EnumerateArray().ToList();
                         var dependencies = arguments_for_function_call.Select(argument => new EvaluationState
                         {
                             dependencies_were_expanded = false,
-                            starting_element = argument
+                            starting_element = argument,
+                            parent = state
                         });
                         evaluation_stack.AddRange(dependencies);
                         state.dependencies.AddRange(dependencies);
@@ -144,5 +168,8 @@ class EvaluationState
     public JsonElement starting_element;
     public bool dependencies_were_expanded = false;
     public List<EvaluationState> dependencies = new List<EvaluationState>();
+    public Dictionary<string, object> evaluation;
+    public EvaluationState parent;
+    Dictionary<string, Dictionary<string, object>> captured_variables = new Dictionary<string, Dictionary<string, object>>();
     
 }
