@@ -9,7 +9,6 @@ class Lisperanto
     static Dictionary<string, List<string>> arguments_needed_to_be_evaluated_for_function = new Dictionary<string, List<string>>();
 
     static List<EvaluationState> evaluation_stack = new List<EvaluationState>();
-    static Dictionary<JsonElement, Dictionary<string, object>> evaluation_result = new Dictionary<JsonElement, Dictionary<string, object>>();
 
     static List<EvaluationState> recently_evaluated = new List<EvaluationState>();
     static async Task Main(string[] args)
@@ -24,9 +23,8 @@ class Lisperanto
                 continue;
             }
             evaluation_stack.Remove(top);
-            var result = evaluate_element(top);
-            print_evaluation(result);
-            Console.Out.Flush();
+            evaluate_element(top);
+            print_evaluation(top);
 
             var recent = recently_evaluated.LastOrDefault();
             if (recent != null && recent.parent != null)
@@ -39,12 +37,23 @@ class Lisperanto
         }
     }
 
-    static void print_evaluation(Dictionary<string, object> eval_res)
+    static void print_evaluation(EvaluationState state)
     {
-        foreach(var kvp in eval_res)
+        Console.WriteLine("-----");
+        Console.WriteLine(state.starting_element.GetRawText());
+        Console.WriteLine("::::");
+        if (state.evaluation == null)
         {
-            Console.WriteLine($"{kvp.Key} :: {kvp.Value}");
+            Console.WriteLine("Not yet evalueated");
         }
+        else
+        {
+            foreach(var kvp in state.evaluation)
+            {
+                Console.WriteLine($"{kvp.Key} :: {kvp.Value}");
+            }
+        }
+        
     }
 
 
@@ -54,14 +63,15 @@ static Dictionary<string, object> evaluate_plus_decimal(EvaluationState state)
     result["type"] = "decimal-result";
     decimal accumulator = 0;
     bool partially_evaluated = false;
+    result["result"] = accumulator;
     foreach(var element in state.dependencies)
     {
-        if (evaluation_result.ContainsKey(element.starting_element) == false)
+        if (element.evaluation == null)
         {
             partially_evaluated = true;
             continue;
         }
-        var possibly_decimal_result = evaluation_result[element.starting_element];
+        var possibly_decimal_result = element.evaluation!;
         if ( (possibly_decimal_result["type"] as string) == "decimal-result" )
         {
             accumulator += (decimal) possibly_decimal_result["result"];
@@ -84,28 +94,26 @@ static Dictionary<string, object> evaluate_plus_decimal(EvaluationState state)
     return result;
 }
 
-static Dictionary<string, object> evaluate_element(EvaluationState state)
+static void evaluate_element(EvaluationState state)
 {
     
     var element = state.starting_element;
     if (element.ValueKind == JsonValueKind.Number)
     {
-        var result = new Dictionary<string, object>();
+        state.evaluation = new Dictionary<string, object>();
         var raw = element.GetRawText();
         if (Decimal.TryParse(raw, System.Globalization.NumberStyles.Any, null, out decimal parsed))
         {
-            result["type"] = "decimal-result";
-            result["result"] = parsed;
+            state.evaluation["type"] = "decimal-result";
+            state.evaluation["result"] = parsed;
         }
         else
         {
-            result["type"] = "failed-parsing-of-decimal";
-            result["raw"] = raw;
+            state.evaluation["type"] = "failed-parsing-of-decimal";
+            state.evaluation["raw"] = raw;
         }
-        evaluation_result[element] = result;
-        state.evaluation = result;
         recently_evaluated.Add(state);
-        return result;
+        return;
     }
     if (element.ValueKind == JsonValueKind.Object)
     {
@@ -115,11 +123,11 @@ static Dictionary<string, object> evaluate_element(EvaluationState state)
             {
                 if (state.dependencies_were_expanded)
                 {
+                    //if (element.TryGetProperty("function-object", out JsonElement function_object)
                     var result = evaluate_plus_decimal(state);
-                    evaluation_result[element] = result;
                     state.evaluation = result;
                     recently_evaluated.Add(state);
-                    return result;
+                    return;
                 }
                 else
                 {
@@ -133,18 +141,19 @@ static Dictionary<string, object> evaluate_element(EvaluationState state)
                             dependencies_were_expanded = false,
                             starting_element = argument,
                             parent = state
-                        });
+                        }).ToList(); // before ToList this was IEnumerable and produced two collections :'(  beginner mistake...
                         evaluation_stack.AddRange(dependencies);
                         state.dependencies.AddRange(dependencies);
                     }
                     state.dependencies_were_expanded = true;
+                    return;
 
                 }
                 
             }
         }
     }
-    return new Dictionary<string, object>();
+    return;
 }
 
     static async Task<JsonElement> evaluate_file(string path)
@@ -171,5 +180,11 @@ class EvaluationState
     public Dictionary<string, object> evaluation;
     public EvaluationState parent;
     Dictionary<string, Dictionary<string, object>> captured_variables = new Dictionary<string, Dictionary<string, object>>();
+
+    public override string ToString()
+    {
+        return starting_element.GetRawText();
+    }
+
     
 }
