@@ -1,0 +1,76 @@
+[
+[
+    ["+"], [ ["comment"], ["this is how you can write function call"] ],
+    [10],
+    [20],
+    [30],
+    [11.2],
+    [1e10],
+    [ ["complex"], [-10], [-15], [ "comment", "this is how type definition looks like" ] ]
+],
+
+[
+    "function-definition",
+    "path.to.function", ["comment", "this is just an array that acts as a path to function like path.to.function" ],
+    [ "a", "b", "c", ["comment", "this is a list of parameters", ["comment", "comment inside comment ... fun"]]],
+    [ ["comment", "body of the function"] ]
+],
+[
+    "get-field",
+    "a",
+    {"a": "hello"}
+],
+[
+    "set-field",
+    "b",
+    42,
+    { "a": "hello"},
+    ["comment", "this should result in ", { "a": "hello", "b": 42} ]
+],
+[
+    "function-definition",
+    "Fibonacci",
+    [
+        "number"
+    ],
+    [
+        [   "if", [ ["="], ["number"], [1] ], ["return", 1 ]],
+        [   "if", ["=", ["number"], 2 ], ["return", 1 ]],
+        [   "return",
+            [   "+",
+                [   "Fibonacci", ["-", "number", 1 ] ],
+                [   "Fibonacci", ["-", "number", 2 ] ]
+            ]
+        ]
+    ],
+    [   "annotation.parameter-type",
+        "number",
+        "complex"
+    ],
+    [   [
+            "annotation",
+            "function-return-type"
+        ],
+        [
+            "System",
+            "Complex"
+        ]
+    ]
+],
+[   ["type-definition"],
+    [
+        "Common",
+        "Email"
+    ],
+    [
+        "first_part",
+        "second_part"
+    ],
+    [   ["annotation"]
+    ]
+
+]
+]
+
+
+
