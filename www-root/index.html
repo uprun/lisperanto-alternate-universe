@@ -1,31 +1,59 @@
 <script src="knockout/knockout-latest.debug.js"></script>
 <script>
     lisperantoViewModel = {};
-    function init() {
-        console.log("init")
-        ko.applyBindings(lisperantoViewModel);
-    }
 </script>
 <script>
-    lisperantoViewModel.function_call_example = ko.observableArray([["+"], 1, 2, 3])
+    lisperantoViewModel.number = function()
+    {
+        var self = this;
+        self.type = "number";
+        self.number = ko.observable(11);
+    };
 </script>
+<script>
+    lisperantoViewModel.arrayList = function()
+    {
+        var self = this;
+        self.type = "arrayList";
+        self.arrayList = ko.observableArray([["+"], 1, 1, 2, 3]);
+        self.addArray = function()
+        {
+            self.arrayList.push(new lisperantoViewModel.arrayList());
+        };
+        self.addNumber = function()
+        {
+            self.arrayList.push(new lisperantoViewModel.number());
+        };
+    };
+    lisperantoViewModel.function_call_example = new lisperantoViewModel.arrayList();
+</script>
+<script>
+    
+</script>
+
 <script type="text/html" id="template-array-list">
-    <!-- ko foreach: $data -->
+    <!-- ko foreach: $data.arrayList -->
     <div data-bind="text: $data"></div>
     <!-- /ko-->
     <div>
         <h3>toolbox</h3>
-        <button>array</button>
-        <button>number</button>
+        <button data-bind="click: $data.addArray">array</button>
+        <button data-bind="click: $data.addNumber">number</button>
         <button>string</button>
         <button>object</button>
 
     </div>
 </script>
+<script>
+    function init() {
+        console.log("init")
+        ko.applyBindings(lisperantoViewModel);
+    }
+</script>
 <body onload="init()" style="background-color: black; color: yellow;">
     <h3>function call</h3>
+    
     <!-- ko template: { name: 'template-array-list', data: $root.function_call_example }  -->
     <!-- /ko -->
-    
 
 </body>
