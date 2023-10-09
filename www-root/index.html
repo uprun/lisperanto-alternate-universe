@@ -73,7 +73,6 @@
 
 <script type="text/html" id="template-arrayList">
     <div class="Lisperanto-arrayList" style="">
-        <div>arrayList:</div>
         <!-- ko foreach: $data.arrayList -->
         <!-- ko if: $data.type == 'arrayList'-->
             <!-- ko template: { name: 'template-arrayList', data: $data }  -->
@@ -89,10 +88,9 @@
         <!-- /ko -->
         <!-- /ko-->
         <div>
-            <h3>toolbox</h3>
-            <button data-bind="click: $data.addArray">array</button>
+            <button data-bind="click: $data.addArray">list</button>
             <button data-bind="click: $data.addNumber">number</button>
-            <button data-bind="click: $data.addString">string</button>
+            <button data-bind="click: $data.addString">text</button>
             <button>object</button>
 
         </div>
