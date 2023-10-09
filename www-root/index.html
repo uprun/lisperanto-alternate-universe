@@ -1,9 +1,9 @@
 <script src="knockout/knockout-latest.debug.js"></script>
 <script>
-    lisperantoViewModel = {};
+    LisperantoViewModel = {};
 </script>
 <script>
-    lisperantoViewModel.number = function()
+    LisperantoViewModel.number = function()
     {
         var self = this;
         self.type = "number";
@@ -11,49 +11,105 @@
     };
 </script>
 <script>
-    lisperantoViewModel.arrayList = function()
+    LisperantoViewModel.string = function()
+    {
+        var self = this;
+        self.type = "string";
+        self.string = ko.observable("example");
+    };
+</script>
+<script>
+    LisperantoViewModel.arrayList = function()
     {
         var self = this;
         self.type = "arrayList";
         self.arrayList = ko.observableArray([["+"], 1, 1, 2, 3]);
         self.addArray = function()
         {
-            self.arrayList.push(new lisperantoViewModel.arrayList());
+            self.arrayList.push(new LisperantoViewModel.arrayList());
         };
         self.addNumber = function()
         {
-            self.arrayList.push(new lisperantoViewModel.number());
+            self.arrayList.push(new LisperantoViewModel.number());
+        };
+        self.addString = function()
+        {
+            self.arrayList.push(new LisperantoViewModel.string())
         };
     };
-    lisperantoViewModel.function_call_example = new lisperantoViewModel.arrayList();
+    LisperantoViewModel.function_call_example = new LisperantoViewModel.arrayList();
 </script>
-<script>
+
+<script type="text/html" id="template-number">
+    <div>
+        <span>number:</span>&nbsp;<span data-bind="text: $data.number"></span>
+    </div>
     
 </script>
 
-<script type="text/html" id="template-array-list">
-    <!-- ko foreach: $data.arrayList -->
-    <div data-bind="text: $data"></div>
-    <!-- /ko-->
+<script type="text/html" id="template-string">
     <div>
-        <h3>toolbox</h3>
-        <button data-bind="click: $data.addArray">array</button>
-        <button data-bind="click: $data.addNumber">number</button>
-        <button>string</button>
-        <button>object</button>
+        <span>string:</span>&nbsp;<span data-bind="text: $data.string"></span>
+    </div>
+</script>
+
+<style>
+    button {
+        background-color: inherit;
+        border-color: coral;
+        color: teal;
+    }
+    .Lisperanto-arrayList {
+        margin-left: 1rem; 
+        border-width: 0px 0px 0px 0.15rem; 
+        border-radius: 0.2rem;
+        border-left-color: beige; 
+        border-style: dashed;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        padding-left: 0.2rem;
+    }
+</style>
+
+<script type="text/html" id="template-arrayList">
+    <div class="Lisperanto-arrayList" style="">
+        <div>arrayList:</div>
+        <!-- ko foreach: $data.arrayList -->
+        <!-- ko if: $data.type == 'arrayList'-->
+            <!-- ko template: { name: 'template-arrayList', data: $data }  -->
+            <!-- /ko -->
+        <!-- /ko -->
+        <!-- ko if: $data.type == 'number'-->
+            <!-- ko template: { name: 'template-number', data: $data }  -->
+            <!-- /ko -->
+        <!-- /ko -->
+         <!-- ko if: $data.type == 'string'-->
+            <!-- ko template: { name: 'template-string', data: $data }  -->
+            <!-- /ko -->
+        <!-- /ko -->
+        <!-- /ko-->
+        <div>
+            <h3>toolbox</h3>
+            <button data-bind="click: $data.addArray">array</button>
+            <button data-bind="click: $data.addNumber">number</button>
+            <button data-bind="click: $data.addString">string</button>
+            <button>object</button>
+
+        </div>
 
     </div>
+    
 </script>
 <script>
     function init() {
         console.log("init")
-        ko.applyBindings(lisperantoViewModel);
+        ko.applyBindings(LisperantoViewModel);
     }
 </script>
 <body onload="init()" style="background-color: black; color: yellow;">
     <h3>function call</h3>
     
-    <!-- ko template: { name: 'template-array-list', data: $root.function_call_example }  -->
+    <!-- ko template: { name: 'template-arrayList', data: $root.function_call_example }  -->
     <!-- /ko -->
 
 </body>
