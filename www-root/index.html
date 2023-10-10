@@ -18,6 +18,8 @@
         self.string = ko.observable("example");
     };
 </script>
+
+
 <script>
     LisperantoViewModel.arrayList = function()
     {
@@ -42,14 +44,25 @@
 
 <script type="text/html" id="template-number">
     <div>
-        <span>number:</span>&nbsp;<span data-bind="text: $data.number"></span>
+        <span></span>&nbsp;<span data-bind="text: $data.number"></span>
     </div>
     
 </script>
 
 <script type="text/html" id="template-string">
     <div>
-        <span>string:</span>&nbsp;<span data-bind="text: $data.string"></span>
+        <span>"</span><span data-bind="text: $data.string"></span><span>"</span>
+    </div>
+</script>
+
+<script type="text/html" id="template-object">
+    <div>
+        <div>{</div>
+            objects are just lists of key-value pairs (tuples) and dictionary / map for keys resolve into correct index
+            <br>
+            plus I do not want to waste my time on something I do not need
+            
+            <div>}</div>
     </div>
 </script>
 
@@ -72,28 +85,31 @@
 </style>
 
 <script type="text/html" id="template-arrayList">
-    <div class="Lisperanto-arrayList" style="">
+    <div class="Lisperanto-arrayList">
+        <div>
+            [
+        </div>
         <!-- ko foreach: $data.arrayList -->
-        <!-- ko if: $data.type == 'arrayList'-->
-            <!-- ko template: { name: 'template-arrayList', data: $data }  -->
+            <!-- ko if: $data.type == 'arrayList'-->
+                <!-- ko template: { name: 'template-arrayList', data: $data }  -->
+                <!-- /ko -->
             <!-- /ko -->
-        <!-- /ko -->
-        <!-- ko if: $data.type == 'number'-->
-            <!-- ko template: { name: 'template-number', data: $data }  -->
+            <!-- ko if: $data.type == 'number'-->
+                <!-- ko template: { name: 'template-number', data: $data }  -->
+                <!-- /ko -->
             <!-- /ko -->
-        <!-- /ko -->
-         <!-- ko if: $data.type == 'string'-->
-            <!-- ko template: { name: 'template-string', data: $data }  -->
+            <!-- ko if: $data.type == 'string'-->
+                <!-- ko template: { name: 'template-string', data: $data }  -->
+                <!-- /ko -->
             <!-- /ko -->
-        <!-- /ko -->
         <!-- /ko-->
         <div>
-            <button data-bind="click: $data.addArray">list</button>
-            <button data-bind="click: $data.addNumber">number</button>
-            <button data-bind="click: $data.addString">text</button>
-            <button>object</button>
+            <button data-bind="click: $data.addArray">[..]</button>
+            <button data-bind="click: $data.addNumber">11</button>
+            <button data-bind="click: $data.addString">".."</button>
 
         </div>
+        <div>]</div>
 
     </div>
     
