@@ -3,68 +3,207 @@
     LisperantoViewModel = {};
 </script>
 <script>
-    LisperantoViewModel.number = function()
+    LisperantoViewModel.symbol = function()
     {
         var self = this;
-        self.type = "number";
-        self.number = ko.observable(11);
+        self.type = "symbol";
+        self.status = "just-created"
+        self.evaluation_context = {};
+        self.symbol = ko.observable("Symbol");
+        self.latestVersion = self.symbol();
+        self.input = function(data)
+        {
+            console.log("input")
+            console.log(event.target.textContent);
+            self.latestVersion = event.target.textContent;
+        };
+        self.keyup = function()
+        {
+            console.log("keypup")
+            console.log(event);
+        };
+
+        self.evaluation_result = "not-yet-computed";
     };
 </script>
-<script>
-    LisperantoViewModel.string = function()
-    {
-        var self = this;
-        self.type = "string";
-        self.string = ko.observable("example");
-    };
-</script>
+
 
 
 <script>
     LisperantoViewModel.arrayList = function()
     {
+
+        // objects are just lists of key-value pairs (tuples) and dictionary / map for keys resolve into correct index
+        // plus I do not want to waste my time on something I do not need
         var self = this;
         self.type = "arrayList";
-        self.arrayList = ko.observableArray([["+"], 1, 1, 2, 3]);
-        self.addArray = function()
+        self.status = "just-created";
+        self.arrayList = ko.observableArray([]);
+        self.add_arrayList = function()
         {
             self.arrayList.push(new LisperantoViewModel.arrayList());
         };
-        self.addNumber = function()
+        self.add_symbol = function()
         {
-            self.arrayList.push(new LisperantoViewModel.number());
+            self.arrayList.push(new LisperantoViewModel.symbol());
         };
-        self.addString = function()
+        
+        self.remove = function(data)
         {
-            self.arrayList.push(new LisperantoViewModel.string())
+            self.arrayList.remove(data);
         };
+
+        self.evaluation_result = "not-yet-computed";
     };
     LisperantoViewModel.function_call_example = new LisperantoViewModel.arrayList();
 </script>
 
-<script type="text/html" id="template-number">
-    <div>
-        <span></span>&nbsp;<span data-bind="text: $data.number"></span>
-    </div>
-    
+<script>
+    LisperantoViewModel.Evaluation_Board = [];
+    LisperantoViewModel.basis_for_evaluation_context = {
+        '+': (a, b) => a + b,
+        '-': (a, b) => a - b,
+        '*': (a, b) => a * b,
+        '/': (a, b) => a / b
+    };
 </script>
 
-<script type="text/html" id="template-string">
-    <div>
-        <span>"</span><span data-bind="text: $data.string"></span><span>"</span>
-    </div>
+
+
+<script>
+    LisperantoViewModel.evaluate_symbol = function(data)
+    {
+        if (typeof(data.evaluation_context[data.latestVersion]) !== "undefined")
+        {
+            data.evaluation_result = data.evaluation_context[data.latestVersion];
+            data.status = "evaluated-to-symbol-resolve-from-context";
+            return;
+        }
+        if (typeof( window[data.latestVersion]) !== "undefined")
+        {
+            data.evaluation_result = window[data.latestVersion];
+            data.status = "evaluated-to-symbol-resolve";
+            return;
+        }
+        
+        try
+        {
+            data.evaluation_result = parseFloat(data.latestVersion);
+            data.status = "evaluated-to-parse-float";
+            return;
+        }
+        catch
+        {
+            data.evaluation_result = "could-not-parse-float";
+        }
+
+        data.status = "failed-to-evaluate";
+
+
+    }
 </script>
 
-<script type="text/html" id="template-object">
-    <div>
-        <div>{</div>
-            objects are just lists of key-value pairs (tuples) and dictionary / map for keys resolve into correct index
-            <br>
-            plus I do not want to waste my time on something I do not need
-            
-            <div>}</div>
-    </div>
+<script>
+    LisperantoViewModel.call_function = function(the_list)
+    {
+        if (the_list.length == 0)
+            return;
+
+        if (the_list.length == 1)
+            return the_list[0].evaluation_result();
+
+        if (the_list.length == 2)
+            return the_list[0].evaluation_result(the_list[1].evaluation_result);
+
+        if (the_list.length == 3)
+            return the_list[0].evaluation_result(the_list[1].evaluation_result, the_list[2].evaluation_result);
+
+        if (the_list.length == 4)
+            return the_list[0].evaluation_result(the_list[1].evaluation_result, the_list[2].evaluation_result, the_list[3].evaluation_result);
+
+
+        if (the_list.length == 5)
+            return the_list[0].evaluation_result(the_list[1].evaluation_result, the_list[2].evaluation_result, the_list[3].evaluation_result, the_list[4].evaluation_result);
+
+
+        if (the_list.length == 6)
+            return the_list[0].evaluation_result(the_list[1].evaluation_result, the_list[2].evaluation_result, the_list[3].evaluation_result, the_list[4].evaluation_result, the_list[5].evaluation_result);
+        
+
+        throw new Error('too many arguments in a function call');
+
+    };
 </script>
+
+<script>
+    LisperantoViewModel.evaluate_function = function(func)
+    {
+        if ( func.status === "waiting-for-parameters-to-be-evaluated")
+        {
+            var  the_list = func.arrayList();
+
+            try
+            {
+                func.evaluation_result = LisperantoViewModel.call_function(the_list);
+                func.status = "evaluated-to-function-call";
+            }
+            catch
+            {
+                func.status = "failed-to-evaluate";
+            }
+        }
+        else
+        {
+            func.status = "waiting-for-parameters-to-be-evaluated";
+            var  the_list = func.arrayList();
+            for(var x of the_list)
+            {
+                console.log(x);
+                x.evaluation_context = LisperantoViewModel.basis_for_evaluation_context;
+                x.status = "please-self-evaluate";
+                LisperantoViewModel.Evaluation_Board.push(x);
+            }
+
+            LisperantoViewModel.Evaluation_Board.push(func);
+        }
+    };
+</script>
+
+<script>
+    LisperantoViewModel.evaluate_example = function()
+    {
+        // some evaluation might ask for human approve
+        var func = LisperantoViewModel.function_call_example;
+        LisperantoViewModel.evaluate_function(func);
+    };
+</script>
+
+<script>
+    LisperantoViewModel.process_Evaluation_Board = function()
+    {
+        if (LisperantoViewModel.Evaluation_Board.length > 0 )
+        {
+            var to_process = LisperantoViewModel.Evaluation_Board.shift();
+            var lookup = {
+                "symbol": (data) => LisperantoViewModel.evaluate_symbol(data),
+                "arrayList": (func) => LisperantoViewModel.evaluate_function(func)
+            };
+
+
+            lookup[to_process.type](to_process);
+        }
+        setTimeout(LisperantoViewModel.process_Evaluation_Board, 10);
+    };
+</script>
+
+<script type="text/html" id="template-symbol">
+    <span 
+        contenteditable="true" 
+        spellcheck="false" 
+        data-bind="text: $data.symbol, event: {
+            input: () => $data.input(),
+            keyup: $data.keyup()
+        } "></span></script>
 
 <style>
     button {
@@ -86,30 +225,28 @@
 
 <script type="text/html" id="template-arrayList">
     <div class="Lisperanto-arrayList">
-        <div>
-            [
-        </div>
+        
         <!-- ko foreach: $data.arrayList -->
             <!-- ko if: $data.type == 'arrayList'-->
+                <div style="margin-left: 1rem;">
+                    (
+                </div>
                 <!-- ko template: { name: 'template-arrayList', data: $data }  -->
                 <!-- /ko -->
+                <div style="margin-left: 1rem;">)<button style="margin-left: 1rem;" data-bind="click: $parent.remove">[x]</button></div>
             <!-- /ko -->
-            <!-- ko if: $data.type == 'number'-->
-                <!-- ko template: { name: 'template-number', data: $data }  -->
-                <!-- /ko -->
-            <!-- /ko -->
-            <!-- ko if: $data.type == 'string'-->
-                <!-- ko template: { name: 'template-string', data: $data }  -->
-                <!-- /ko -->
+            <!-- ko if: $data.type == 'symbol'-->
+                <div style="margin-left: 1rem;">
+                    <!-- ko template: { name: 'template-symbol', data: $data }  -->
+                    <!-- /ko --> <button data-bind="click: $parent.remove">[x]</button>
+                </div>
             <!-- /ko -->
         <!-- /ko-->
-        <div>
-            <button data-bind="click: $data.addArray">[..]</button>
-            <button data-bind="click: $data.addNumber">11</button>
-            <button data-bind="click: $data.addString">".."</button>
-
+        <div style="margin-left: 1rem;">
+            <button data-bind="click: $data.add_arrayList">(..)</button>
+            <button data-bind="click: $data.add_symbol">+ Symbol</button>
         </div>
-        <div>]</div>
+        
 
     </div>
     
@@ -118,12 +255,17 @@
     function init() {
         console.log("init")
         ko.applyBindings(LisperantoViewModel);
+        LisperantoViewModel.process_Evaluation_Board();
     }
 </script>
 <body onload="init()" style="background-color: black; color: yellow;">
     <h3>function call</h3>
-    
+    <div style="margin-left: 1rem;">
+        (
+    </div>
     <!-- ko template: { name: 'template-arrayList', data: $root.function_call_example }  -->
     <!-- /ko -->
+    <div style="margin-left: 1rem;">)</div>
+    <button data-bind="click: $root.evaluate_example">evaluate</button>
 
 </body>
