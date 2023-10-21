@@ -3,14 +3,19 @@
     LisperantoViewModel = {};
 </script>
 <script>
-    LisperantoViewModel.symbol = function()
+    LisperantoViewModel.symbol = function(parent)
     {
         var self = this;
         self.type = "symbol";
         self.status = "just-created"
+        self.parent = parent;
         self.evaluation_context = {};
         self.symbol = ko.observable("Symbol");
         self.latestVersion = self.symbol();
+        self.get_path = function()
+        {
+            return self.parent.get_index() + self.parent.get_child_index(self);
+        };
         self.input = function(data)
         {
             console.log("input")
@@ -30,7 +35,7 @@
 
 
 <script>
-    LisperantoViewModel.arrayList = function()
+    LisperantoViewModel.arrayList = function(parent)
     {
 
         // objects are just lists of key-value pairs (tuples) and dictionary / map for keys resolve into correct index
@@ -39,13 +44,24 @@
         self.type = "arrayList";
         self.status = "just-created";
         self.arrayList = ko.observableArray([]);
+        self.parent = parent;
+        self.get_path = function()
+        {
+            if ( self.parent == null ||  typeof(self.parent) === 'undefined')
+                return "root.";
+            return self.parent.get_path() + self.parent.get_child_index(self);
+        };
+        self.get_child_index = function(child)
+        {
+            return self.arrayList().findIndex(element => element === child) + ".";
+        };
         self.add_arrayList = function()
         {
-            self.arrayList.push(new LisperantoViewModel.arrayList());
+            self.arrayList.push(new LisperantoViewModel.arrayList(self));
         };
         self.add_symbol = function()
         {
-            self.arrayList.push(new LisperantoViewModel.symbol());
+            self.arrayList.push(new LisperantoViewModel.symbol(self));
         };
         
         self.remove = function(data)
