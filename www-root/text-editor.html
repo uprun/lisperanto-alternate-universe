@@ -14,12 +14,12 @@
     TextEditorViewModel["symbol-under-edit"] = undefined;
 </script>
 <script>
-    TextEditorViewModel["symbol"] = function( symbol, parent, index )
+    TextEditorViewModel["symbol"] = function( par_symbol, par_parent, par_index )
     {
         var self = this;
-        self["symbol"] = ko.observable((symbol === " " || symbol === "") ? "&nbsp;" : symbol);
-        self["parent"] = parent;
-        self["index"] = index;
+        self["symbol"] = ko.observable((par_symbol === " " || par_symbol === "") ? "&nbsp;" : par_symbol);
+        self["parent"] = par_parent;
+        self["index"] = par_index;
         self["under-edit"] = false;
         self["state"] = ko.observable("");
         self["switch-edit-state"] = function()
@@ -48,19 +48,19 @@
         self["remove"] = function()
         {
             self["switch-edit-state"]();
-            parent["remove-symbol"](self);
+            self["parent"]["remove-symbol"](self);
         };
 
         self["activate-editing-of-left-sibling"] = function() 
         {
             self["switch-edit-state"]();
-            parent["activate-editing-of-symbol-on-the-left"](self);
+            self["parent"]["activate-editing-of-symbol-on-the-left"](self);
         };
 
         self["activate-editing-of-right-sibling"] = function() 
         {
             self["switch-edit-state"]();
-            parent["activate-editing-of-symbol-on-the-right"](self);
+            self["parent"]["activate-editing-of-symbol-on-the-right"](self);
         };
 
         self["update-parent-and-index"] = function(parent, index)
@@ -72,18 +72,18 @@
     };
 </script>
 <script>
-    TextEditorViewModel["line"] = function(string, parent, index)
+    TextEditorViewModel["line"] = function(par_string, par_parent, par_index)
     {
         var self = this;
         self["symbols"] = ko.observableArray([]);
-        self["parent"] = parent;
-        self["index"] = index;
+        self["parent"] = par_parent;
+        self["index"] = par_index;
 
         self["symbols"].push(new TextEditorViewModel["symbol"]("", self, 0))
 
-        if ( typeof(string) !== "undefined")
+        if ( typeof(par_string) !== "undefined")
         {
-            string.split('').forEach(
+            par_string.split('').forEach(
                 (symbol, index) => 
                     self["symbols"].push(new TextEditorViewModel["symbol"](symbol, self, index + 1))
             );
@@ -178,12 +178,12 @@
     }
 </script>
 <script>
-    TextEditorViewModel["editor-area"] = function(lines)
+    TextEditorViewModel["editor-area"] = function(par_lines)
     {
         var self = this;
         self['id'] = "1";
         self['lines'] = ko.observableArray([]);
-        lines.forEach((line, index) => 
+        par_lines.forEach((line, index) => 
         {
             self["lines"].push(new TextEditorViewModel["line"](line, self, index));
         });
