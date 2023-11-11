@@ -17,7 +17,7 @@
     TextEditorViewModel["symbol"] = function( symbol, parent, index )
     {
         var self = this;
-        self["symbol"] = ko.observable(symbol === " " ? "&nbsp;" : symbol);
+        self["symbol"] = ko.observable((symbol === " " || symbol === "") ? "&nbsp;" : symbol);
         self["parent"] = parent;
         self["index"] = index;
         self["under-edit"] = false;
@@ -27,7 +27,8 @@
             if (self["under-edit"])
             {
                 self["under-edit"] = false;
-                self["state"]("")
+                self["state"]("");
+                TextEditorViewModel["symbol-under-edit"] = undefined;
             }
             else
             {
@@ -43,45 +44,150 @@
             console.log("under-edit");
             return true;
         };
+
         self["remove"] = function()
         {
             self["switch-edit-state"]();
             parent["remove-symbol"](self);
         };
+
+        self["activate-editing-of-left-sibling"] = function() 
+        {
+            self["switch-edit-state"]();
+            parent["activate-editing-of-symbol-on-the-left"](self);
+        };
+
+        self["activate-editing-of-right-sibling"] = function() 
+        {
+            self["switch-edit-state"]();
+            parent["activate-editing-of-symbol-on-the-right"](self);
+        };
+
+        self["update-parent-and-index"] = function(parent, index)
+        {
+            self["parent"] = parent;
+            self["index"] = index;
+        };
+
     };
 </script>
 <script>
-    TextEditorViewModel["line"] = function(string)
+    TextEditorViewModel["line"] = function(string, parent, index)
     {
         var self = this;
         self["symbols"] = ko.observableArray([]);
+        self["parent"] = parent;
+        self["index"] = index;
+
+        self["symbols"].push(new TextEditorViewModel["symbol"]("", self, 0))
+
         if ( typeof(string) !== "undefined")
         {
             string.split('').forEach(
                 (symbol, index) => 
-                    self.symbols.push(new TextEditorViewModel["symbol"](symbol, self, index))
+                    self["symbols"].push(new TextEditorViewModel["symbol"](symbol, self, index + 1))
             );
         }
+
+        self["refresh-indexes-of-symbols"] = function()
+        {
+            self["symbols"]().forEach((symbol, index) => symbol["update-parent-and-index"](self, index));
+        };
+
         self["remove-symbol"] = function(symbol)
         {
-            self.symbols.remove(symbol);
-            TextEditorViewModel["symbol-under-edit"] = undefined;
+            if ( self["index"] > 0)
+            {
+                self["symbols"].remove(symbol);
+                self["refresh-indexes-of-symbols"]();
+            }
+            else
+            {
+                if (symbol["index"] > 0)
+                {
+                    self["symbols"].remove(symbol);
+                    self["refresh-indexes-of-symbols"]();
+                }
+            }
             if (symbol["index"] > 0)
             {
                 self["symbols"]()[symbol["index"] - 1]["switch-edit-state"]();
             }
+            else
+            {
+                if ( self["index"] > 0)
+                {
+                    self["parent"]["activate-editing-of-last-symbol-on-previous-line"](self);
+                    self["parent"]["add-current-line-to-previous"](self);
+                }
+                else
+                {
+                    self["symbols"]()[0]["switch-edit-state"]();
+                }
+                
+            }
         };
-        
+
+        self["activate-editing-of-symbol-on-the-left"] = function(symbol)
+        {
+            if (symbol["index"] > 0)
+            {
+                self["symbols"]()[symbol["index"] - 1]["switch-edit-state"]();
+            }
+            else
+            {
+
+                self["parent"]["activate-editing-of-last-symbol-on-previous-line"](self);
+            }
+        }
+
+        self["activate-editing-of-symbol-on-the-right"] = function(symbol)
+        {
+            if (symbol["index"] < self["symbols"]().length - 1)
+            {
+                self["symbols"]()[symbol["index"] + 1]["switch-edit-state"]();
+            }
+            else
+            {
+                self["parent"]["activate-editing-of-first-symbol-on-next-line"](self);
+            }
+        }
+
+        self["activate-editing-of-first-symbol"] = function()
+        {
+            self["symbols"]()[0]["switch-edit-state"]();
+        };
+
+        self["activate-editing-of-last-symbol"] = function()
+        {
+            var array = self["symbols"]();
+            array[array.length - 1]["switch-edit-state"]();
+        }
+
+        self["add-content-of-the-line"] = function(line)
+        {
+            const available_amount_of_symbols = self["symbols"]().length;
+            line["symbols"]().forEach((symbol, index) => {
+                self["symbols"].push(symbol);
+                symbol["update-parent-and-index"](self, index + available_amount_of_symbols);
+            })
+
+        }
+
+
     }
 </script>
 <script>
-    TextEditorViewModel["editor-area"] = function()
+    TextEditorViewModel["editor-area"] = function(lines)
     {
         var self = this;
         self['id'] = "1";
         self['lines'] = ko.observableArray([]);
-        var line = 
-        self.lines.push(new TextEditorViewModel["line"]("hello planet"));
+        lines.forEach((line, index) => 
+        {
+            self["lines"].push(new TextEditorViewModel["line"](line, self, index));
+        });
+        
         self["keydown"] = function()
         {
             console.log('keydown')
@@ -95,7 +201,36 @@
         {
             document.getElementById(self['id']).focus();
             console.log(event);
-        }
+        };
+
+        self["activate-editing-of-first-symbol-on-next-line"] = function(line)
+        {
+            if (line["index"] < self["lines"]().length - 1)
+            {
+                self["lines"]()[line["index"] + 1]["activate-editing-of-first-symbol"]();
+            }
+
+        };
+
+        self["activate-editing-of-last-symbol-on-previous-line"] = function(line)
+        {
+            if (line["index"] > 0)
+            {
+                self["lines"]()[line["index"] - 1]["activate-editing-of-last-symbol"]();
+            }
+
+        };
+
+        self["add-current-line-to-previous"] = function(line)
+        {
+            if (line["index"] > 0)
+            {
+                self["lines"]()[line["index"] - 1]["add-content-of-the-line"](line);
+                self["lines"].remove(line);
+            }
+            
+
+        };
     };
     
 </script>
@@ -111,6 +246,25 @@
             }
 
         };
+
+        lookup["ArrowLeft"] = () => 
+        {
+            if (typeof(TextEditorViewModel["symbol-under-edit"]) !== "undefined")
+            {
+                TextEditorViewModel["symbol-under-edit"]["activate-editing-of-left-sibling"]();
+            }
+        };
+
+        lookup["ArrowRight"] = () => 
+        {
+            if (typeof(TextEditorViewModel["symbol-under-edit"]) !== "undefined")
+            {
+                TextEditorViewModel["symbol-under-edit"]["activate-editing-of-right-sibling"]();
+            }
+       };
+
+
+
         if (event["key"] in lookup)
         {
             lookup[event["key"]]();
@@ -143,8 +297,10 @@
             id: $data['id']
         }, event: {mouseover: $data['mouseover']}, click: $data['click']">
         <!-- ko foreach: $data.lines -->
+        <div>
             <!-- ko foreach: $data.symbols --><span class="symbol" data-bind="html: $data.symbol, click: $data['switch-edit-state'], 
             style: { 'border-right-color': $data['state']() === 'show-cursor' ? 'coral' : 'black' }"></span><!-- /ko -->
+        </div>
         <!-- /ko-->
     </div>
     
@@ -152,7 +308,12 @@
 <script>
     function init() {
         console.log("init")
-        TextEditorViewModel.example_editor_area = new TextEditorViewModel["editor-area"]();
+        TextEditorViewModel.example_editor_area = new TextEditorViewModel["editor-area"](
+            [
+                "hello world",
+                "hello planet"
+            ]
+        );
         ko.applyBindings(TextEditorViewModel);
     }
 </script>
