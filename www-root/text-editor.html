@@ -2,20 +2,24 @@
 <script>
     TextEditorViewModel = {};
 </script>
+
 <style>
-    .under-edit {
-        border-right-style: dashed;
-        border-right-width: 0.1em;
+    .symbol {
+        border-right-style: solid;
+        border-right-width: 0.05em;
+        border-right-color: black;
     }
 </style>
 <script>
     TextEditorViewModel["symbol-under-edit"] = undefined;
 </script>
 <script>
-    TextEditorViewModel["symbol"] = function( symbol )
+    TextEditorViewModel["symbol"] = function( symbol, parent, index )
     {
         var self = this;
-        self["symbol"] = ko.observable(symbol);
+        self["symbol"] = ko.observable(symbol === " " ? "&nbsp;" : symbol);
+        self["parent"] = parent;
+        self["index"] = index;
         self["under-edit"] = false;
         self["state"] = ko.observable("");
         self["switch-edit-state"] = function()
@@ -32,11 +36,17 @@
                     TextEditorViewModel["symbol-under-edit"]["switch-edit-state"]();
                 }
                 self["under-edit"] = true;
-                self["state"]("under-edit")
+                self["state"]("show-cursor");
                 TextEditorViewModel["symbol-under-edit"] = self;
             }
             
             console.log("under-edit");
+            return true;
+        };
+        self["remove"] = function()
+        {
+            self["switch-edit-state"]();
+            parent["remove-symbol"](self);
         };
     };
 </script>
@@ -47,11 +57,20 @@
         self["symbols"] = ko.observableArray([]);
         if ( typeof(string) !== "undefined")
         {
-            for(var symbol of string)
-            {
-                self.symbols.push(new TextEditorViewModel["symbol"](symbol));
-            }
+            string.split('').forEach(
+                (symbol, index) => 
+                    self.symbols.push(new TextEditorViewModel["symbol"](symbol, self, index))
+            );
         }
+        self["remove-symbol"] = function(symbol)
+        {
+            self.symbols.remove(symbol);
+            TextEditorViewModel["symbol-under-edit"] = undefined;
+            if (symbol["index"] > 0)
+            {
+                self["symbols"]()[symbol["index"] - 1]["switch-edit-state"]();
+            }
+        };
         
     }
 </script>
@@ -59,11 +78,52 @@
     TextEditorViewModel["editor-area"] = function()
     {
         var self = this;
-        self.lines = ko.observableArray([]);
+        self['id'] = "1";
+        self['lines'] = ko.observableArray([]);
         var line = 
         self.lines.push(new TextEditorViewModel["line"]("hello planet"));
+        self["keydown"] = function()
+        {
+            console.log('keydown')
+            console.log(event);
+        };
+        self["mouseover"] = function()
+        {
+            console.log(event)
+        };
+        self["click"] = function()
+        {
+            document.getElementById(self['id']).focus();
+            console.log(event);
+        }
     };
     
+</script>
+
+<script>
+    TextEditorViewModel["onkeydown"] = function()
+    {
+        var lookup = {};
+        lookup["Backspace"] = () => {
+            if (typeof(TextEditorViewModel["symbol-under-edit"]) !== "undefined")
+            {
+                TextEditorViewModel["symbol-under-edit"]["remove"]();
+            }
+
+        };
+        if (event["key"] in lookup)
+        {
+            lookup[event["key"]]();
+        }
+        console.log(event);
+    }
+</script>
+
+<script>
+    TextEditorViewModel["onkeyup"] = function()
+    {
+        console.log(event)
+    }
 </script>
 
 <style>
@@ -74,10 +134,17 @@
     }
 </style>
 
+
+
 <script type="text/html" id="template-editor-area">
-    <div class="">
+    <!--NOTE: on input if this is character key and a lot of keydowns but no key-up then I can create input field and paste same events there to trigger MacOS multi-input-->
+    <div class=""
+        data-bind="attr: {
+            id: $data['id']
+        }, event: {mouseover: $data['mouseover']}, click: $data['click']">
         <!-- ko foreach: $data.lines -->
-            <!-- ko foreach: $data.symbols --><span data-bind="text: $data.symbol, click: $data['switch-edit-state'], class: $data.state"></span><!-- /ko -->
+            <!-- ko foreach: $data.symbols --><span class="symbol" data-bind="html: $data.symbol, click: $data['switch-edit-state'], 
+            style: { 'border-right-color': $data['state']() === 'show-cursor' ? 'coral' : 'black' }"></span><!-- /ko -->
         <!-- /ko-->
     </div>
     
@@ -89,7 +156,10 @@
         ko.applyBindings(TextEditorViewModel);
     }
 </script>
-<body onload="init()" style="background-color: black; color: yellow;">
+<body onload="init()"
+    onkeydown="TextEditorViewModel['onkeydown']()"
+    onkeyup="TextEditorViewModel['onkeyup']()"
+    style="background-color: black; color: yellow;">
 
     <!-- ko template: { name: 'template-editor-area', data: $root.example_editor_area }  -->
     <!-- /ko -->
