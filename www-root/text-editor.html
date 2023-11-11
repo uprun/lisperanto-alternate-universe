@@ -1,0 +1,96 @@
+<script src="knockout/knockout-latest.debug.js"></script>
+<script>
+    TextEditorViewModel = {};
+</script>
+<style>
+    .under-edit {
+        border-right-style: dashed;
+        border-right-width: 0.1em;
+    }
+</style>
+<script>
+    TextEditorViewModel["symbol-under-edit"] = undefined;
+</script>
+<script>
+    TextEditorViewModel["symbol"] = function( symbol )
+    {
+        var self = this;
+        self["symbol"] = ko.observable(symbol);
+        self["under-edit"] = false;
+        self["state"] = ko.observable("");
+        self["switch-edit-state"] = function()
+        {
+            if (self["under-edit"])
+            {
+                self["under-edit"] = false;
+                self["state"]("")
+            }
+            else
+            {
+                if (typeof(TextEditorViewModel["symbol-under-edit"]) !== "undefined" && TextEditorViewModel["symbol-under-edit"] != self)
+                {
+                    TextEditorViewModel["symbol-under-edit"]["switch-edit-state"]();
+                }
+                self["under-edit"] = true;
+                self["state"]("under-edit")
+                TextEditorViewModel["symbol-under-edit"] = self;
+            }
+            
+            console.log("under-edit");
+        };
+    };
+</script>
+<script>
+    TextEditorViewModel["line"] = function(string)
+    {
+        var self = this;
+        self["symbols"] = ko.observableArray([]);
+        if ( typeof(string) !== "undefined")
+        {
+            for(var symbol of string)
+            {
+                self.symbols.push(new TextEditorViewModel["symbol"](symbol));
+            }
+        }
+        
+    }
+</script>
+<script>
+    TextEditorViewModel["editor-area"] = function()
+    {
+        var self = this;
+        self.lines = ko.observableArray([]);
+        var line = 
+        self.lines.push(new TextEditorViewModel["line"]("hello planet"));
+    };
+    
+</script>
+
+<style>
+    button {
+        background-color: inherit;
+        border-color: coral;
+        color: teal;
+    }
+</style>
+
+<script type="text/html" id="template-editor-area">
+    <div class="">
+        <!-- ko foreach: $data.lines -->
+            <!-- ko foreach: $data.symbols --><span data-bind="text: $data.symbol, click: $data['switch-edit-state'], class: $data.state"></span><!-- /ko -->
+        <!-- /ko-->
+    </div>
+    
+</script>
+<script>
+    function init() {
+        console.log("init")
+        TextEditorViewModel.example_editor_area = new TextEditorViewModel["editor-area"]();
+        ko.applyBindings(TextEditorViewModel);
+    }
+</script>
+<body onload="init()" style="background-color: black; color: yellow;">
+
+    <!-- ko template: { name: 'template-editor-area', data: $root.example_editor_area }  -->
+    <!-- /ko -->
+</body>
