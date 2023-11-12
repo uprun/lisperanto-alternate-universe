@@ -72,6 +72,17 @@
     };
 </script>
 <script>
+    TextEditorViewModel["symbol-extension--insert-character-after"] = function(parameter_symbol_object, parameter_character)
+    {
+        TextEditorViewModel["line-extension--after-symbol-insert-character"]
+            (
+                parameter_symbol_object["parent"],
+                parameter_symbol_object,
+                parameter_character
+            );
+    };
+</script>
+<script>
     TextEditorViewModel["line"] = function(par_string, par_parent, par_index)
     {
         var self = this;
@@ -178,6 +189,57 @@
     }
 </script>
 <script>
+    TextEditorViewModel["line-extension--after-symbol-insert-character"] = function(parameter_line_object, parameter_symbol_object, parameter_character_to_insert)
+    {
+        const new_symbol = new TextEditorViewModel["symbol"](parameter_character_to_insert);
+        const new_left_symbols = parameter_line_object["symbols"]()
+            .slice
+                (
+                    0,
+                    parameter_symbol_object["index"] + 1
+                );
+        const new_right_symbols = parameter_line_object["symbols"]()
+            .slice
+                (
+                    parameter_symbol_object["index"] + 1
+                );
+        const new_symbols = new_left_symbols["concat"](new_symbol, new_right_symbols);
+        parameter_line_object["symbols"](new_symbols);
+        parameter_line_object["refresh-indexes-of-symbols"]();
+        new_symbol["switch-edit-state"]();
+    };
+</script>
+<script>
+    TextEditorViewModel["symbol-extension--split-line-after-symbol"] = function(parameter_symbol_object)
+    {
+        TextEditorViewModel["line-extension--split-after-symbol"](parameter_symbol_object["parent"], parameter_symbol_object);
+    };
+</script>
+<script>
+    TextEditorViewModel["line-extension--split-after-symbol"] = function(parameter_line_object, parameter_symbol_object)
+    {
+        const new_next_line_symbols = parameter_line_object["symbols"]()
+            .slice
+                (
+                    parameter_symbol_object["index"] + 1
+                );
+        const new_current_line_symbols = parameter_line_object["symbols"]()
+            .slice
+                (
+                    0,
+                    parameter_symbol_object["index"] + 1
+                );
+        parameter_line_object["symbols"](new_current_line_symbols);
+        TextEditorViewModel["editor-area-extension--add-new-line-after-line-with-symbols"]
+            (
+                parameter_line_object["parent"],
+                parameter_line_object,
+                new_next_line_symbols
+            );
+        parameter_line_object["parent"]["activate-editing-of-first-symbol-on-next-line"](parameter_line_object);
+    };
+</script>
+<script>
     TextEditorViewModel["editor-area"] = function(par_lines)
     {
         var self = this;
@@ -236,6 +298,52 @@
 </script>
 
 <script>
+    TextEditorViewModel["line-extension--add-symbols"] = function(parameter_line, parameter_symbols_to_add)
+    {
+        const available_symbols_count = parameter_line["symbols"]().length;
+        parameter_symbols_to_add.forEach((symbol, index) =>
+            { 
+                parameter_line["symbols"].push(symbol);
+                symbol["update-parent-and-index"](parameter_line, available_symbols_count + index);
+            });
+    };
+</script>
+
+<script>
+    TextEditorViewModel["line-extension--update-index"] = function(parameter_line, parameter_index)
+    {
+        parameter_line["index"] = parameter_index;
+    };
+</script>
+
+<script>
+    TextEditorViewModel["create"] = function(parameter_object_name_to_create, parameter_constructor_parameter)
+    {
+        const created = new TextEditorViewModel[parameter_object_name_to_create]["constructor"](parameter_constructor_parameter);
+        // TODO: copy methods and don't forget about self reference there might be errors with closures...
+        // or I should skip using "self" at all and use only "extension style" methods/functions
+    };
+</script>
+
+<script>
+    TextEditorViewModel["editor-area-extension--add-new-line-after-line-with-symbols"] = 
+        function(
+            parameter_editor_area,
+            parameter_line,
+            parameter_symbols_to_add
+        )
+    {
+        const lines_before = parameter_editor_area["lines"]().slice(0, parameter_line["index"] + 1);
+        const lines_after = parameter_editor_area["lines"]().slice(parameter_line["index"] + 1);
+        const new_line = new TextEditorViewModel["line"](undefined, parameter_editor_area, parameter_line["index"] + 1);
+        lines_after.forEach((line, index) => TextEditorViewModel["line-extension--update-index"](line, index + new_line["index"] + 1))
+        TextEditorViewModel["line-extension--add-symbols"](new_line, parameter_symbols_to_add);
+        const new_merged_lines = lines_before["concat"](new_line, lines_after);
+        parameter_editor_area["lines"](new_merged_lines);
+    };
+</script>
+
+<script>
     TextEditorViewModel["onkeydown"] = function()
     {
         var lookup = {};
@@ -261,13 +369,39 @@
             {
                 TextEditorViewModel["symbol-under-edit"]["activate-editing-of-right-sibling"]();
             }
-       };
+        };
+
+        lookup["CapsLock"] = () => console.log("nothing on CapsLock");
+        lookup["Shift"] = () => console.log("nothing on Shift");
+        lookup["Alt"] = () => console.log("nothing on Alt");
+        lookup["Control"] = () => console.log("nothing on Control");
+        lookup["Meta"] = () => console.log("nothing on Meta");
+        lookup["Tab"] = () => console.log("nothing on Tab");
+
+        lookup["Enter"] = () => 
+        {
+            if (typeof(TextEditorViewModel["symbol-under-edit"]) !== "undefined")
+            {
+                TextEditorViewModel["symbol-extension--split-line-after-symbol"](TextEditorViewModel["symbol-under-edit"]);
+            }
+        }; 
 
 
 
         if (event["key"] in lookup)
         {
             lookup[event["key"]]();
+        }
+        else
+        {
+            if (typeof(TextEditorViewModel["symbol-under-edit"]) !== "undefined")
+            {
+                TextEditorViewModel["symbol-extension--insert-character-after"]
+                    (
+                        TextEditorViewModel["symbol-under-edit"],
+                        event["key"]
+                    );
+            }
         }
         console.log(event);
     }
