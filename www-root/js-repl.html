@@ -1,0 +1,61 @@
+<script src="knockout/knockout-latest.debug.js"></script>
+<style>
+    .some {
+        width: max-content;
+        min-width: 5rem;
+        min-height: 5rem;
+        border: 0.2rem;
+        border-radius: 0.2rem;
+        border-color: rosybrown;
+        border-style: solid;
+        color: inherit;
+        margin: auto;
+        padding: 0.5rem;
+    }
+</style>
+<script>
+    js_repl = {};
+</script>
+<script>
+    js_repl.onkeydown = function()
+    {};
+</script>
+<script>
+    js_repl.onkeyup = function()
+    {};
+</script>
+<script>
+    init = function()
+    {};
+</script>
+
+<script>
+    js_repl.editor_on_paste = function()
+    {
+        event.preventDefault();
+
+        let paste = (event.clipboardData || window.clipboardData).getData('text');
+        //console.log(paste);
+        //console.log(event);
+        if (document.queryCommandSupported('insertText')) 
+        {
+            document.execCommand('insertText', false, paste);
+        } else {
+            document.execCommand('paste', false, paste);
+        }
+        var scene_editor = document.getElementById("scene-editor");
+
+    };
+</script>
+<body onload="init()"
+    onkeydown="js_repl['onkeydown']()"
+    onkeyup="js_repl['onkeyup']()"
+    style="background-color: black; color: yellow;">
+    <div
+        class="some"
+        contenteditable="true"
+        spellcheck="false"
+        onpaste="js_repl.editor_on_paste()"
+        >
+    </div>
+</body>

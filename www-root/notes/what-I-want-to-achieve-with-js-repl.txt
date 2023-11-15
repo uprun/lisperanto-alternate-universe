@@ -1,0 +1,8 @@
+what I want to do:
+edit-text
+do not add more features than needed
+save on [Command+Enter] -- save always
+evaluate js code?? --- nope really
+create new version of code and deploy it in container
+ough and it should be done fast, within one day
+don't be afraid to use extra libraries
