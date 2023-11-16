@@ -1,32 +1,82 @@
 <script src="knockout/knockout-latest.debug.js"></script>
 <style>
     .some {
+        left: 0px;
+        right: 0px;
+        position: absolute;
         width: max-content;
         min-width: 5rem;
         min-height: 5rem;
         border: 0.2rem;
         border-radius: 0.2rem;
+        
+        color: inherit;
+        padding: 0.5rem;
+        outline: 0px solid transparent; /* prevent blue outline */
+    }
+</style>
+<style>
+    .available-for-edit {
+        border-style: dashed;
+        border-color: yellow;
+        cursor: auto;
+        
+    }
+</style>
+<style>
+    .available-for-move {
         border-color: rosybrown;
         border-style: solid;
-        color: inherit;
-        margin: auto;
-        padding: 0.5rem;
+        cursor: move;
+    }
+</style>
+<style>
+    .prevent-select {
+        -webkit-user-select: none; /* Safari */
+        -ms-user-select: none; /* IE 10 and IE 11 */
+        user-select: none; /* Standard syntax */
     }
 </style>
 <script>
     js_repl = {};
 </script>
 <script>
+    js_repl.edit_mode = ko.observable(false);
+</script>
+<script>
     js_repl.onkeydown = function()
-    {};
+    {
+        if(event.key == "Enter" && (event.metaKey || event.ctrlKey))
+        {
+            console.log("switch edit mode" );
+            event.preventDefault();
+            js_repl.edit_mode(!js_repl.edit_mode());
+            return;
+        }
+    };
 </script>
 <script>
     js_repl.onkeyup = function()
     {};
 </script>
 <script>
+    js_repl.editor = function()
+    {
+        self = this;
+        self.text_previous_version = ko.observable("hello");
+    };
+</script>
+<script>
+    js_repl.open_editors = ko.observableArray([]);
+</script>
+<script>
     init = function()
-    {};
+    {
+        console.log("init")
+        js_repl.open_editors.push(new js_repl.editor());
+        
+        ko.applyBindings(js_repl);
+    };
 </script>
 
 <script>
@@ -47,15 +97,50 @@
 
     };
 </script>
+
+<script>
+    just_notes = {};
+</script>
+
+<script>
+    just_notes.shift_canvas_by_delta = function(deltaX, deltaY)
+    {
+        just_notes.debug_logging && console.log({deltaX: deltaX, deltaY: deltaY});
+        for(var individual of js_repl.open_editors())
+        {
+            individual.offsetTop(individual.offsetTop() - deltaY);
+            individual.offsetLeft(individual.offsetLeft(- deltaX));
+
+        }
+    };
+</script>
+
+<script>
+    just_notes.body_on_wheel = function()
+    {
+        just_notes.debug_logging && console.log(event);
+        just_notes.shift_canvas_by_delta(event.deltaX, event.deltaY);
+    };
+</script>
 <body onload="init()"
+    onwheel="just_notes.body_on_wheel()"
     onkeydown="js_repl['onkeydown']()"
     onkeyup="js_repl['onkeyup']()"
     style="background-color: black; color: yellow;">
+    <!-- ko foreach: $root.open_editors-->
     <div
         class="some"
-        contenteditable="true"
+        contenteditable="false"
         spellcheck="false"
         onpaste="js_repl.editor_on_paste()"
+        data-bind="attr: {contenteditable: $root.edit_mode()? 'true': 'false'}, 
+            css: { 'available-for-edit' : $root.edit_mode(),
+             'available-for-move' : $root.edit_mode() === false,
+              'prevent-select': $root.edit_mode() === false,
+            },
+            style"
         >
     </div>
+    <!-- /ko -->
+    
 </body>
