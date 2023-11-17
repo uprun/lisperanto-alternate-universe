@@ -2,10 +2,7 @@
 // new version 2023-07-08 Munich
 using System.Reflection;
 using System.Text.Json;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 using System.Net;
 
 
@@ -56,6 +53,38 @@ class Lisperanto
             {
                 context.Response.AddHeader("Server", "web-server-created-by-Oleksandr-Kryvonos/v-2023-11-17");
                 context.Response.AddHeader("Date", DateTime.Now.ToString("yyyy-MM-dd--HH:mm:ss"));
+                if (Directory.Exists(requested_path))
+                {
+                    DirectoryInfo dir = new DirectoryInfo(requested_path);
+                    var result = dir.GetFileSystemInfos()
+                        .Select(info => info.Name)
+                        .Union(new []{".."})
+                        .OrderBy(name => name)
+                        .ToArray();
+                    using(var memory_stream = new MemoryStream())
+                    {
+                        
+                        using(var stream_writer = new StreamWriter(memory_stream))
+                        {
+                            await stream_writer.WriteLineAsync("<style> a { color: yellow; } </style>");
+                            await stream_writer.WriteLineAsync($"<body style='background-color: black; color: yellow;'>");
+                            for(int i = 0 ; i < result.Length; ++i)
+                            {
+                                var file_name = Path.GetFileName(result[i]);
+                                var path_to_respond = Path.Join(request.Url.AbsolutePath, file_name);
+                                await stream_writer.WriteLineAsync($"<div><a href='{path_to_respond}'>{file_name}</a></div>");
+                            }
+                            await stream_writer.WriteLineAsync($"</body>");
+                        }
+                        await context.Response.OutputStream.WriteAsync(memory_stream.ToArray());
+                        context.Response.ContentType = "text/plain";
+                        context.Response.StatusCode = (int) HttpStatusCode.OK;
+                        context.Response.Close();
+                    }
+                    
+
+                    continue;
+                }
                 if (File.Exists(requested_path) == false)
                 {
                     context.Response.StatusCode = (int) HttpStatusCode.NotFound;
@@ -77,7 +106,7 @@ class Lisperanto
                     context.Response.ContentType = "text/plain";
                 }
                 
-                context.Response.OutputStream.Write(file_content, 0, file_content.Length);
+                await context.Response.OutputStream.WriteAsync(file_content, 0, file_content.Length);
                 
                 context.Response.StatusCode = (int) HttpStatusCode.OK;
                 context.Response.Close();
