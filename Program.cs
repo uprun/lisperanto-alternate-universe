@@ -48,7 +48,7 @@ class Lisperanto
             // do something with the request
             Console.WriteLine($"{request.Url}");
             Console.WriteLine(request.Url.AbsolutePath);
-            var requested_path = Path.Combine(root_path, "www-root", request.Url.AbsolutePath.Substring(1));
+            var requested_path = Path.Combine(root_path, request.Url.AbsolutePath.Substring(1));
             try
             {
                 context.Response.AddHeader("Server", "web-server-created-by-Oleksandr-Kryvonos/v-2023-11-17");
