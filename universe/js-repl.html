@@ -9,7 +9,7 @@
         min-height: 5rem;
         border: 0.2rem;
         border-radius: 0.2rem;
-        
+        white-space: pre-wrap;
         color: inherit;
         padding: 0.5rem;
         outline: 0px solid transparent; /* prevent blue outline */
@@ -60,10 +60,12 @@
     {};
 </script>
 <script>
-    js_repl.editor = function()
+    js_repl.editor = function(parameter_text)
     {
         self = this;
-        self.text_previous_version = ko.observable("hello");
+        self.text_initial_version = ko.observable(parameter_text);
+        self.text_current_version = ko.observable(parameter_text);
+        self.mode = ko.computed(() => js_repl.edit_mode() ? 'true': 'false')
     };
 </script>
 <script>
@@ -73,9 +75,29 @@
     init = function()
     {
         console.log("init")
-        js_repl.open_editors.push(new js_repl.editor());
+        
         
         ko.applyBindings(js_repl);
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
+        });
+        const file_path = params["file-path"];
+        if (typeof(file_path) !== "undefined")
+        {
+            fetch(file_path, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'text/plain',
+                    'Content-Type': 'text/plain'
+                }
+            })
+            .then(response => response.text())
+            .then(next_stage => js_repl.open_editors.push(new js_repl.editor(next_stage)));
+        }
+        else
+        {
+            new js_repl.editor("hello");
+        }
     };
 </script>
 
@@ -130,17 +152,22 @@
     <!-- ko foreach: $root.open_editors-->
     <div
         class="some"
-        contenteditable="false"
         spellcheck="false"
         onpaste="js_repl.editor_on_paste()"
-        data-bind="attr: {contenteditable: $root.edit_mode()? 'true': 'false'}, 
+        data-bind="
+            text: $data.text_initial_version,
+            attr: {
+                id: $data.mode(),
+                contenteditable: $data.mode()
+            }, 
             css: { 'available-for-edit' : $root.edit_mode(),
              'available-for-move' : $root.edit_mode() === false,
               'prevent-select': $root.edit_mode() === false,
             },
-            style"
+            "
         >
     </div>
+    <div style="position: absolute; left: 50%; bottom: 1rem;" > <div style="transform-origin: bottom center; position: relative;left:-50%; bottom: 0px;">[Control + Enter] or [Command + Enter] to switch to edit mode</div></div>
     <!-- /ko -->
     
 </body>
