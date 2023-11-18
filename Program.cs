@@ -57,22 +57,37 @@ class Lisperanto
                 {
                     DirectoryInfo dir = new DirectoryInfo(requested_path);
                     var result = dir.GetFileSystemInfos()
-                        .Select(info => info.Name)
-                        .Union(new []{".."})
-                        .OrderBy(name => name)
+                        .OrderBy(info => info.Name)
                         .ToArray();
                     using(var memory_stream = new MemoryStream())
                     {
                         
                         using(var stream_writer = new StreamWriter(memory_stream))
                         {
+                            await stream_writer.WriteLineAsync("<style> html, body {");
+                            await stream_writer.WriteLineAsync("height: 100%;");
+                            await stream_writer.WriteLineAsync("width: 100%;");
+                            await stream_writer.WriteLineAsync("font-family: 'Input Mono', monospace;");
+                            await stream_writer.WriteLineAsync("margin: 0;");
+                            await stream_writer.WriteLineAsync("}</style>");
                             await stream_writer.WriteLineAsync("<style> a { color: yellow; } </style>");
                             await stream_writer.WriteLineAsync($"<body style='background-color: black; color: yellow;'>");
+                            await stream_writer.WriteLineAsync($"<div><a href='{Path.Join(request.Url.AbsolutePath, "..")}'>..</a></div>");
                             for(int i = 0 ; i < result.Length; ++i)
                             {
-                                var file_name = Path.GetFileName(result[i]);
+                                FileSystemInfo fileSystemInfo = result[i];
+                                var file_name = Path.GetFileName(fileSystemInfo.Name);
                                 var path_to_respond = Path.Join(request.Url.AbsolutePath, file_name);
-                                await stream_writer.WriteLineAsync($"<div><a href='{path_to_respond}'>{file_name}</a></div>");
+                                await stream_writer.WriteLineAsync($"<div>");
+                                if (Directory.Exists(fileSystemInfo.FullName))
+                                {
+                                    await stream_writer.WriteLineAsync($"<a href='{path_to_respond}'>{file_name}</a>");
+                                }
+                                else
+                                {
+                                    await stream_writer.WriteLineAsync($"<a href='/universe/js-repl.html?file-path={path_to_respond}'>{file_name}</a>");
+                                }
+                                await stream_writer.WriteLineAsync($"</div>");
                             }
                             await stream_writer.WriteLineAsync($"</body>");
                         }

@@ -1,5 +1,14 @@
 <script src="knockout/knockout-latest.debug.js"></script>
 <style>
+    html, 
+    body {
+        height: 100%;
+        width: 100%;
+        font-family: 'Input Mono', monospace;
+        margin: 0;
+    }
+</style>
+<style>
     .some {
         left: 0px;
         right: 0px;
@@ -167,7 +176,18 @@
             "
         >
     </div>
-    <div style="position: absolute; left: 50%; bottom: 1rem;" > <div style="transform-origin: bottom center; position: relative;left:-50%; bottom: 0px;">[Control + Enter] or [Command + Enter] to switch to edit mode</div></div>
+    <div style="
+        position: absolute;
+        left: 50%;
+        bottom: 1rem;" > 
+        <div style="
+            transform-origin: bottom center; 
+            position: relative;
+            left:-50%; 
+            bottom: 0px;">
+            [Control + Enter] or [Command + Enter] to switch to edit mode
+        </div>
+    </div>
     <!-- /ko -->
     
 </body>
