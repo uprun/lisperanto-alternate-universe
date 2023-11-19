@@ -8,6 +8,8 @@ static class LisperantoGet
         var request = context.Request;
         string file_path = request.Url.AbsolutePath.Substring(1);
         var requested_path = Path.Combine(root_path, file_path);
+
+
         if (Directory.Exists(requested_path))
         {
             DirectoryInfo dir = new DirectoryInfo(requested_path);
@@ -65,7 +67,31 @@ static class LisperantoGet
             context.Response.Close();
             return;
         }
-        var file_content = await File.ReadAllBytesAsync(requested_path);
+        //var last_write_time = File.GetLastWriteTime(requested_path);
+        var folder_draft_path = Path.Combine(root_path, ".history", file_path, "draft");
+        Console.WriteLine($"{nameof(folder_draft_path)}: {folder_draft_path}");
+        var folder_stable_path = Path.Combine(root_path, ".history", file_path, "stable");
+
+        var potential_versions = new List<string>();
+        if (Directory.Exists(folder_draft_path))
+        {
+            potential_versions.AddRange(Directory.GetFiles(folder_draft_path));
+        }
+
+        if (Directory.Exists(folder_stable_path))
+        {
+            potential_versions.AddRange(Directory.GetFiles(folder_stable_path));
+        }
+
+        var latest_version_file_path = potential_versions
+            .MaxBy(info => Path.GetFileName(info));
+
+        if (latest_version_file_path != null)
+        {
+            requested_path = latest_version_file_path;
+        }
+
+        byte[] file_content = await File.ReadAllBytesAsync(requested_path);
         var extension = Path.GetExtension(request.Url.AbsolutePath);
         Dictionary<string, string> lookup_for_extension = new Dictionary<string, string>();
         lookup_for_extension.Add(".html", "text/html");

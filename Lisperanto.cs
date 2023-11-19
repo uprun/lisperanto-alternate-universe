@@ -11,6 +11,7 @@ class Lisperanto
 {
     static async Task Main(string[] args)
     {
+        Console.WriteLine(String.Join(", ", args));
         // this code was inspired by https://thoughtbot.com/blog/using-httplistener-to-build-a-http-server-in-csharp
         var _listener = new HttpListener();
         var host = "http://localhost:" + "8080".ToString() + "/";
