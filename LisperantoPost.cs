@@ -11,7 +11,7 @@ static class LisperantoPost
         var requested_path = Path.Combine(root_path, file_path);
         var draft_path = Path.Combine(root_path, ".history", file_path, "draft");
         Console.WriteLine($"{nameof(draft_path)}: {draft_path}");
-        var final_path = Path.Combine(root_path, "history", requested_path, "final");
+        var stable_path = Path.Combine(root_path, ".history", file_path, "stable");
         var time_stampt = DateTime.Now.ToString("yyyy-MM-dd--HH-mm-ss") + ".txt";
         var file_draft_path = Path.Combine(draft_path, time_stampt);
         Directory.CreateDirectory(draft_path);
@@ -40,10 +40,10 @@ static class LisperantoPost
                 Console.WriteLine("Client data content length {0}", request.ContentLength64);
 
                 Console.WriteLine("Start of data:");
-                string s = reader.ReadToEnd();
+                string text_content = reader.ReadToEnd();
                 // test 2023-11-19--09:52
                 //Console.WriteLine(s);
-                await File.WriteAllTextAsync(file_draft_path, s);
+                await File.WriteAllTextAsync(file_draft_path, text_content);
                 Console.WriteLine("End of data:");
                 reader.Close();
             }

@@ -8,6 +8,9 @@ static class LisperantoGet
         var request = context.Request;
         string file_path = request.Url.AbsolutePath.Substring(1);
         var requested_path = Path.Combine(root_path, file_path);
+        var branch = request.QueryString["branch"] ?? "draft";
+
+        Console.WriteLine($"branch: {branch}");
 
 
         if (Directory.Exists(requested_path))
@@ -16,10 +19,10 @@ static class LisperantoGet
             var result = dir.GetFileSystemInfos()
                 .OrderBy(info => info.Name)
                 .ToArray();
-            using(var memory_stream = new MemoryStream())
+            using (var memory_stream = new MemoryStream())
             {
-                
-                using(var stream_writer = new StreamWriter(memory_stream))
+
+                using (var stream_writer = new StreamWriter(memory_stream))
                 {
                     await stream_writer.WriteLineAsync("<style> html, body {");
                     await stream_writer.WriteLineAsync("height: 100%;");
@@ -30,7 +33,7 @@ static class LisperantoGet
                     await stream_writer.WriteLineAsync("<style> a { color: yellow; } </style>");
                     await stream_writer.WriteLineAsync($"<body style='background-color: black; color: yellow;'>");
                     await stream_writer.WriteLineAsync($"<div><a href='{Path.Join(request.Url.AbsolutePath, "..")}'>..</a></div>");
-                    for(int i = 0 ; i < result.Length; ++i)
+                    for (int i = 0; i < result.Length; ++i)
                     {
                         FileSystemInfo fileSystemInfo = result[i];
                         var file_name = Path.GetFileName(fileSystemInfo.Name);
@@ -54,42 +57,21 @@ static class LisperantoGet
                 }
                 await context.Response.OutputStream.WriteAsync(memory_stream.ToArray());
                 context.Response.ContentType = "text/plain";
-                context.Response.StatusCode = (int) HttpStatusCode.OK;
+                context.Response.StatusCode = (int)HttpStatusCode.OK;
                 context.Response.Close();
             }
-            
+
 
             return;
         }
         if (File.Exists(requested_path) == false)
         {
-            context.Response.StatusCode = (int) HttpStatusCode.NotFound;
+            context.Response.StatusCode = (int)HttpStatusCode.NotFound;
             context.Response.Close();
             return;
         }
         //var last_write_time = File.GetLastWriteTime(requested_path);
-        var folder_draft_path = Path.Combine(root_path, ".history", file_path, "draft");
-        Console.WriteLine($"{nameof(folder_draft_path)}: {folder_draft_path}");
-        var folder_stable_path = Path.Combine(root_path, ".history", file_path, "stable");
-
-        var potential_versions = new List<string>();
-        if (Directory.Exists(folder_draft_path))
-        {
-            potential_versions.AddRange(Directory.GetFiles(folder_draft_path));
-        }
-
-        if (Directory.Exists(folder_stable_path))
-        {
-            potential_versions.AddRange(Directory.GetFiles(folder_stable_path));
-        }
-
-        var latest_version_file_path = potential_versions
-            .MaxBy(info => Path.GetFileName(info));
-
-        if (latest_version_file_path != null)
-        {
-            requested_path = latest_version_file_path;
-        }
+        requested_path = GetLatestFileVersionPath(root_path, file_path, branch);
 
         byte[] file_content = await File.ReadAllBytesAsync(requested_path);
         var extension = Path.GetExtension(request.Url.AbsolutePath);
@@ -105,11 +87,39 @@ static class LisperantoGet
         {
             context.Response.ContentType = "text/plain";
         }
-        
+
         await context.Response.OutputStream.WriteAsync(file_content, 0, file_content.Length);
-        
-        context.Response.StatusCode = (int) HttpStatusCode.OK;
+
+        context.Response.StatusCode = (int)HttpStatusCode.OK;
         context.Response.Close();
     }
 
+    private static string GetLatestFileVersionPath(string root_path, string file_path, string branch)
+    {
+        var requested_path = Path.Combine(root_path, file_path);
+        var folder_branch_path = Path.Combine(root_path, ".history", file_path, branch);
+        Console.WriteLine($"{nameof(folder_branch_path)}: {folder_branch_path}");
+        var folder_stable_path = Path.Combine(root_path, ".history", file_path, "stable");
+
+        var potential_versions = new List<string>();
+        if (Directory.Exists(folder_branch_path))
+        {
+            potential_versions.AddRange(Directory.GetFiles(folder_branch_path));
+        }
+
+        if (Directory.Exists(folder_stable_path))
+        {
+            potential_versions.AddRange(Directory.GetFiles(folder_stable_path));
+        }
+
+        var latest_version_file_path = potential_versions
+            .MaxBy(info => Path.GetFileName(info));
+
+        if (latest_version_file_path != null)
+        {
+            requested_path = latest_version_file_path;
+        }
+
+        return requested_path;
+    }
 }
