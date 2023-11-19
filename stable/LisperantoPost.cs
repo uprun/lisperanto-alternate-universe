@@ -1,7 +1,7 @@
 using System.Linq;
 using System.Net;
-namespace Lisperanto;
-static class LisperantoPost
+namespace lisperanto;
+static class lisperantoPost
 {
     public static async Task Process(string root_path, System.Net.HttpListenerContext context)
     {

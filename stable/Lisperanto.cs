@@ -5,9 +5,9 @@ using System.Text.Json;
 using System.Linq;
 using System.Net;
 
-namespace Lisperanto;
+namespace lisperanto;
 
-class Lisperanto
+class lisperanto
 {
     static async Task Main(string[] args)
     {
@@ -33,9 +33,9 @@ class Lisperanto
                 context.Response.AddHeader("Server", "web-server-created-by-Oleksandr-Kryvonos/v-2023-11-17");
                 context.Response.AddHeader("Date", DateTime.Now.ToString("yyyy-MM-dd--HH:mm:ss"));
                 if (context.Request.HttpMethod == "GET")
-                    await LisperantoGet.Process(root_path, context);
+                    await lisperantoGet.Process(root_path, context);
                 if (context.Request.HttpMethod == "POST")
-                    await LisperantoPost.Process(root_path, context);
+                    await lisperantoPost.Process(root_path, context);
             }
             catch(Exception e)
             {
