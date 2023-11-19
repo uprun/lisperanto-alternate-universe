@@ -9,7 +9,7 @@ static class lisperantoPost
         var request = context.Request;
         string file_path = request.Url.AbsolutePath.Substring(1);
         var requested_path = Path.Combine(root_path, file_path);
-        var draft_path = Path.Combine(root_path, ".history", "draft", file_path);
+        var draft_path = Path.Combine(root_path, "..", "draft",  ".history", file_path);
         Console.WriteLine($"{nameof(draft_path)}: {draft_path}");
         var time_stampt = DateTime.Now.ToString("yyyy-MM-dd--HH-mm-ss") + ".txt";
         var file_draft_path = Path.Combine(draft_path, time_stampt);

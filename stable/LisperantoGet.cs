@@ -97,9 +97,9 @@ static class lisperantoGet
     private static string GetLatestFileVersionPath(string root_path, string file_path, string branch)
     {
         var requested_path = Path.Combine(root_path, file_path);
-        var folder_branch_path = Path.Combine(root_path, ".history",branch, file_path );
+        var folder_branch_path = Path.Combine(root_path, "..", branch, ".history", file_path );
         Console.WriteLine($"{nameof(folder_branch_path)}: {folder_branch_path}");
-        var folder_stable_path = Path.Combine(root_path, ".history", "stable", file_path );
+        var folder_stable_path = Path.Combine(root_path, "..", "stable", ".history", file_path );
 
         var potential_versions = new List<string>();
         if (Directory.Exists(folder_branch_path))
