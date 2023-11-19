@@ -18,7 +18,8 @@
         min-height: 5rem;
         border: 0.2rem;
         border-radius: 0.2rem;
-        white-space: pre-wrap;
+        white-space: break-spaces;
+        display: block;
         color: inherit;
         padding: 0.5rem;
         outline: 0px solid transparent; /* prevent blue outline */
@@ -72,9 +73,23 @@
     js_repl.editor = function(parameter_text)
     {
         self = this;
-        self.text_initial_version = ko.observable(parameter_text);
-        self.text_current_version = ko.observable(parameter_text);
+        self.text_initial_version = parameter_text;
+        self.text_current_version = parameter_text;
         self.mode = ko.computed(() => js_repl.edit_mode() ? 'true': 'false')
+        self.input = function()
+        {
+            if (typeof(event) === "undefined")
+            {
+                return;
+            }
+            var target = event.target;
+            if (target.innerText !== self.text_current_version)
+            {
+                self.text_current_version = target.innerText;
+            }
+
+            //console.log(event);
+        };
     };
 </script>
 <script>
@@ -91,7 +106,7 @@
             get: (searchParams, prop) => searchParams.get(prop),
         });
         const file_path = params["file-path"];
-        if (typeof(file_path) !== "undefined")
+        if (typeof(file_path) !== "undefined" && file_path !== null)
         {
             fetch(file_path, {
                 method: 'GET',
@@ -105,7 +120,7 @@
         }
         else
         {
-            new js_repl.editor("hello");
+            js_repl.open_editors.push(new js_repl.editor("hello"));
         }
     };
 </script>
@@ -159,7 +174,8 @@
     onkeyup="js_repl['onkeyup']()"
     style="background-color: black; color: yellow;">
     <!-- ko foreach: $root.open_editors-->
-    <div
+    <div>
+        <span
         class="some"
         spellcheck="false"
         onpaste="js_repl.editor_on_paste()"
@@ -173,9 +189,18 @@
              'available-for-move' : $root.edit_mode() === false,
               'prevent-select': $root.edit_mode() === false,
             },
+            event: {
+                input: $data.input(),
+                keydown: $data.input(),
+                keyup: $data.input()
+            }
+            
             "
         >
+    </span>
+
     </div>
+    
     <div style="
         position: absolute;
         left: 50%;
