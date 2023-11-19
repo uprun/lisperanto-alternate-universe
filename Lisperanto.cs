@@ -9,34 +9,14 @@ namespace Lisperanto;
 
 class Lisperanto
 {
-    private static void streamReadExample()
-    {
-        // if (request.HasEntityBody)
-        //     {
-        //         var body = request.InputStream;
-        //         var encoding = request.ContentEncoding;
-        //         var reader = new StreamReader(body, encoding);
-        //         if (request.ContentType != null)
-        //         {
-        //             Console.WriteLine("Client data content type {0}", request.ContentType);
-        //         }
-        //         Console.WriteLine("Client data content length {0}", request.ContentLength64);
-
-        //         Console.WriteLine("Start of data:");
-        //         string s = reader.ReadToEnd();
-        //         Console.WriteLine(s);
-        //         Console.WriteLine("End of data:");
-        //         reader.Close();
-        //         body.Close();
-                
-        //     }
-    }
     static async Task Main(string[] args)
     {
+        // this code was inspired by https://thoughtbot.com/blog/using-httplistener-to-build-a-http-server-in-csharp
         var _listener = new HttpListener();
         var host = "http://localhost:" + "8080".ToString() + "/";
         _listener.Prefixes.Add(host);
         _listener.Start();
+        Console.WriteLine($"Server available at: {host}");
         var root_path = new DirectoryInfo(Directory.GetCurrentDirectory()).FullName;
         Console.WriteLine(root_path);
         Console.WriteLine("Waiting for context");
@@ -44,15 +24,17 @@ class Lisperanto
         {
             var context = await _listener.GetContextAsync();
             Console.WriteLine("Received context");
-            
-
             // do something with the request
-            Console.WriteLine($"{context.Request.Url}");
+            Console.WriteLine($"{context.Request.HttpMethod} {context.Request.Url}");
             
             try
             {
-                await LisperantoGet.Process(root_path, context);
-
+                context.Response.AddHeader("Server", "web-server-created-by-Oleksandr-Kryvonos/v-2023-11-17");
+                context.Response.AddHeader("Date", DateTime.Now.ToString("yyyy-MM-dd--HH:mm:ss"));
+                if (context.Request.HttpMethod == "GET")
+                    await LisperantoGet.Process(root_path, context);
+                if (context.Request.HttpMethod == "POST")
+                    await LisperantoPost.Process(root_path, context);
             }
             catch(Exception e)
             {
@@ -61,12 +43,6 @@ class Lisperanto
                 context.Response.Close();
                 continue;
             }
-            
-        
-
         }
-
     }
-
-
 }

@@ -6,3 +6,11 @@ evaluate js code?? --- nope really
 create new version of code and deploy it in container -- it can be done later
 ough and it should be done fast, within one day -- it already took me more than one day but it is ok
 don't be afraid to use extra libraries - but not many libraries
+hello
+really
+and
+?
+
+
+
+2

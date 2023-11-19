@@ -7,8 +7,6 @@ static class LisperantoGet
     {
         var request = context.Request;
         var requested_path = Path.Combine(root_path, request.Url.AbsolutePath.Substring(1));
-        context.Response.AddHeader("Server", "web-server-created-by-Oleksandr-Kryvonos/v-2023-11-17");
-        context.Response.AddHeader("Date", DateTime.Now.ToString("yyyy-MM-dd--HH:mm:ss"));
         if (Directory.Exists(requested_path))
         {
             DirectoryInfo dir = new DirectoryInfo(requested_path);
