@@ -14,11 +14,15 @@ class lisperanto
         Console.WriteLine(String.Join(", ", args));
         // this code was inspired by https://thoughtbot.com/blog/using-httplistener-to-build-a-http-server-in-csharp
         var _listener = new HttpListener();
-        var host = "http://localhost:" + "8080".ToString() + "/";
+        DirectoryInfo root_directoryInfo = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), ".."));
+        
+        var root_path = root_directoryInfo.FullName;
+
+        var host = $"http://{root_directoryInfo.Name}.localhost:" + "8080".ToString() + "/";
         _listener.Prefixes.Add(host);
         _listener.Start();
         Console.WriteLine($"Server available at: {host}");
-        var root_path = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "..")).FullName;
+        
         Console.WriteLine(root_path);
         Console.WriteLine("Waiting for context");
         while(true)

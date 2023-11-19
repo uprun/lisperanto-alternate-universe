@@ -94,7 +94,7 @@ static class lisperantoGet
         context.Response.Close();
     }
 
-    private static string GetLatestFileVersionPath(string root_path, string file_path, string branch)
+    public static string GetLatestFileVersionPath(string root_path, string file_path, string branch)
     {
         var requested_path = Path.Combine(root_path, file_path);
         var folder_branch_path = Path.Combine(root_path, "..", branch, ".history", file_path );
