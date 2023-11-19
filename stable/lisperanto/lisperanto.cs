@@ -18,7 +18,7 @@ class lisperanto
         _listener.Prefixes.Add(host);
         _listener.Start();
         Console.WriteLine($"Server available at: {host}");
-        var root_path = new DirectoryInfo(Directory.GetCurrentDirectory()).FullName;
+        var root_path = new DirectoryInfo(Path.Combine(Directory.GetCurrentDirectory(), "..")).FullName;
         Console.WriteLine(root_path);
         Console.WriteLine("Waiting for context");
         while(true)

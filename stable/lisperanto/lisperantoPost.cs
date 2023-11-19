@@ -10,14 +10,13 @@ static class lisperantoPost
         string file_path = request.Url.AbsolutePath.Substring(1);
         var requested_path = Path.Combine(root_path, file_path);
         var draft_path = Path.Combine(root_path, "..", "draft",  ".history", file_path);
+        var for_humans_backup_file_path = Path.Combine(root_path, "..", "draft", file_path);
         Console.WriteLine($"{nameof(draft_path)}: {draft_path}");
         var time_stampt = DateTime.Now.ToString("yyyy-MM-dd--HH-mm-ss") + ".txt";
         var file_draft_path = Path.Combine(draft_path, time_stampt);
         Directory.CreateDirectory(draft_path);
-        if (Directory.Exists(requested_path))
-        {
-            
-        }
+        Directory.CreateDirectory(Path.GetDirectoryName(for_humans_backup_file_path));
+        
         if (File.Exists(requested_path) == false)
         {
             context.Response.StatusCode = (int) HttpStatusCode.NotFound;
@@ -43,6 +42,7 @@ static class lisperantoPost
                 // test 2023-11-19--09:52
                 //Console.WriteLine(s);
                 await File.WriteAllTextAsync(file_draft_path, text_content);
+                await File.WriteAllTextAsync(for_humans_backup_file_path, text_content);
                 Console.WriteLine("End of data:");
                 reader.Close();
             }
