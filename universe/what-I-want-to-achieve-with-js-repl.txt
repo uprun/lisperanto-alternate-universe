@@ -1,16 +1,11 @@
-what I want to achieve with js-repl:
-edit-text
+Title
+ what I want to achieve with js-repl:
+Start date
+ 2023-11-15 22:38
+[X] edit-text done on 2023-11-19 09:00
 do not add more features than needed
-save on [Command+Enter] -- save always
-evaluate js code?? --- nope really
+[X] save on [Command+Enter] -- save always
+[X] evaluate js code?? --- nope really
 create new version of code and deploy it in container -- it can be done later
 ough and it should be done fast, within one day -- it already took me more than one day but it is ok
 don't be afraid to use extra libraries - but not many libraries
-hello
-really
-and
-?
-
-
-
-2
