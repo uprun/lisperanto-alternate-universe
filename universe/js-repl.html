@@ -74,9 +74,12 @@
     {
         self = this;
         self.text_current_version = parameter_text;
-        parameter_text = parameter_text.replaceAll("\r\n", "<br>");
-        parameter_text = parameter_text.replaceAll("\n", "<br>");
-        parameter_text += "<br>";
+        
+        if (parameter_text.endsWith("\n"))
+        {
+            parameter_text += "\n";
+        }
+        
         self.inner_html = parameter_text;
         self.text_current_version = parameter_text;
         self.mode = ko.computed(() => js_repl.edit_mode() ? 'true': 'false')
@@ -209,7 +212,7 @@
         spellcheck="false"
         onpaste="js_repl.editor_on_paste()"
         data-bind="
-            html: $data.inner_html,
+            text: $data.inner_html,
             attr: {
                 id: $data.mode(),
                 contenteditable: $data.mode()

@@ -45,10 +45,10 @@ static class LisperantoGet
                         }
                         else
                         {
-                            await stream_writer.WriteLineAsync($"<a href='/universe/js-repl.html?file-path={path_to_respond}'>{file_name}</a>");
+                            await stream_writer.WriteLineAsync($"<a href='/universe/js-repl.html?branch=stable&file-path={path_to_respond}?branch=draft'>{file_name}</a>");
                             if (file_name.EndsWith(".html"))
                             {
-                                await stream_writer.WriteLineAsync($"<a href='{path_to_respond}'>[Open app]</a>");
+                                await stream_writer.WriteLineAsync($"<a href='{path_to_respond}?branch=draft'>[Open app]</a>");
                             }
                         }
                         await stream_writer.WriteLineAsync($"</div>");
@@ -97,9 +97,9 @@ static class LisperantoGet
     private static string GetLatestFileVersionPath(string root_path, string file_path, string branch)
     {
         var requested_path = Path.Combine(root_path, file_path);
-        var folder_branch_path = Path.Combine(root_path, ".history", file_path, branch);
+        var folder_branch_path = Path.Combine(root_path, ".history",branch, file_path );
         Console.WriteLine($"{nameof(folder_branch_path)}: {folder_branch_path}");
-        var folder_stable_path = Path.Combine(root_path, ".history", file_path, "stable");
+        var folder_stable_path = Path.Combine(root_path, ".history", "stable", file_path );
 
         var potential_versions = new List<string>();
         if (Directory.Exists(folder_branch_path))
