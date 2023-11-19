@@ -6,7 +6,8 @@ static class LisperantoGet
     public static async Task Process(string root_path, System.Net.HttpListenerContext context)
     {
         var request = context.Request;
-        var requested_path = Path.Combine(root_path, request.Url.AbsolutePath.Substring(1));
+        string file_path = request.Url.AbsolutePath.Substring(1);
+        var requested_path = Path.Combine(root_path, file_path);
         if (Directory.Exists(requested_path))
         {
             DirectoryInfo dir = new DirectoryInfo(requested_path);

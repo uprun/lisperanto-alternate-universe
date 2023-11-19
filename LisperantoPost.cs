@@ -7,7 +7,14 @@ static class LisperantoPost
     {
         //https://learn.microsoft.com/en-us/dotnet/api/system.net.httplistenerrequest?view=net-7.0
         var request = context.Request;
-        var requested_path = Path.Combine(root_path, request.Url.AbsolutePath.Substring(1));
+        string file_path = request.Url.AbsolutePath.Substring(1);
+        var requested_path = Path.Combine(root_path, file_path);
+        var draft_path = Path.Combine(root_path, ".history", file_path, "draft");
+        Console.WriteLine($"{nameof(draft_path)}: {draft_path}");
+        var final_path = Path.Combine(root_path, "history", requested_path, "final");
+        var time_stampt = DateTime.Now.ToString("yyyy-MM-dd--HH-mm-ss") + ".txt";
+        var file_draft_path = Path.Combine(draft_path, time_stampt);
+        Directory.CreateDirectory(draft_path);
         if (Directory.Exists(requested_path))
         {
             
@@ -34,8 +41,9 @@ static class LisperantoPost
 
                 Console.WriteLine("Start of data:");
                 string s = reader.ReadToEnd();
-                Console.WriteLine(s);
-                await File.WriteAllTextAsync(requested_path, s);
+                // test 2023-11-19--09:52
+                //Console.WriteLine(s);
+                await File.WriteAllTextAsync(file_draft_path, s);
                 Console.WriteLine("End of data:");
                 reader.Close();
             }

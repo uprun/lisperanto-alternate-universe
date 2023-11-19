@@ -12,7 +12,7 @@
     .some {
         left: 0px;
         right: 0px;
-        position: absolute;
+        position: relative;
         width: max-content;
         min-width: 5rem;
         min-height: 5rem;
@@ -51,18 +51,18 @@
     js_repl = {};
 </script>
 <script>
-    js_repl.edit_mode = ko.observable(false);
+    js_repl.edit_mode = ko.observable(true);
 </script>
 <script>
     js_repl.onkeydown = function()
     {
-        if(event.key == "Enter" && (event.metaKey || event.ctrlKey))
-        {
-            console.log("switch edit mode" );
-            event.preventDefault();
-            js_repl.edit_mode(!js_repl.edit_mode());
-            return;
-        }
+        // if(event.key == "Enter" && (event.metaKey || event.ctrlKey))
+        // {
+        //     console.log("switch edit mode" );
+        //     event.preventDefault();
+        //     js_repl.edit_mode(!js_repl.edit_mode());
+        //     return;
+        // }
     };
 </script>
 <script>
@@ -230,7 +230,7 @@
 
     </div>
     
-    <div style="
+    <!-- <div style="
         position: absolute;
         left: 50%;
         bottom: 1rem;" > 
@@ -241,7 +241,7 @@
             bottom: 0px;">
             [Control + Enter] or [Command + Enter] to switch to edit mode
         </div>
-    </div>
+    </div> -->
     <!-- /ko -->
     
 </body>
