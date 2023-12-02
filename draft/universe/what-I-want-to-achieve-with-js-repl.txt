@@ -10,3 +10,12 @@ create new version of code and deploy it in container -- it can be done later
 ough and it should be done fast, within one day -- it already took me more than one day but it is ok
 don't be afraid to use extra libraries - but not many libraries
 here goes the test?
+// 2023-12-02
+I do not exactly remember what I did here ... I need to simplify
+so, I do not need to add a lot of features
+   No version controll
+   nothing fancy
+   super-light-weight code
+   less dependencies
+       so I got rid of knockout.js feels good, though library is good as well but I shall see what can I do on my own
+   let's try it out

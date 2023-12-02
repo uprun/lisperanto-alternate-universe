@@ -1,4 +1,3 @@
-<script src="knockout-latest.debug.js"></script>
 <style>
     html, 
     body {
@@ -23,117 +22,66 @@
         color: inherit;
         padding: 0.5rem;
         outline: 0px solid transparent; /* prevent blue outline */
-    }
-</style>
-<style>
-    .available-for-edit {
-        border-style: dashed;
-        border-color: yellow;
         cursor: auto;
-        
-    }
-</style>
-<style>
-    .available-for-move {
-        border-color: rosybrown;
-        border-style: solid;
-        cursor: move;
-    }
-</style>
-<style>
-    .prevent-select {
-        -webkit-user-select: none; /* Safari */
-        -ms-user-select: none; /* IE 10 and IE 11 */
-        user-select: none; /* Standard syntax */
     }
 </style>
 <script>
     js_repl = {};
 </script>
 <script>
-    js_repl.edit_mode = ko.observable(true);
-</script>
-<script>
-    js_repl.onkeydown = function()
+    js_repl.text_current_version = undefined;
+    js_repl.populate_dom_from_text = function(parameter_text)
     {
-        // if(event.key == "Enter" && (event.metaKey || event.ctrlKey))
-        // {
-        //     console.log("switch edit mode" );
-        //     event.preventDefault();
-        //     js_repl.edit_mode(!js_repl.edit_mode());
-        //     return;
-        // }
-    };
-</script>
-<script>
-    js_repl.onkeyup = function()
-    {};
-</script>
-<script>
-    js_repl.editor = function(parameter_text)
-    {
-        self = this;
-        self.text_current_version = parameter_text;
-        
         if (parameter_text.endsWith("\n"))
         {
             parameter_text += "\n";
         }
-        
-        self.inner_html = parameter_text;
-        self.text_current_version = parameter_text;
-        self.mode = ko.computed(() => js_repl.edit_mode() ? 'true': 'false')
-        self.input = function()
-        {
-            if (typeof(event) === "undefined")
-            {
-                return;
-            }
-
-            const params = new Proxy(new URLSearchParams(window.location.search), {
-                get: (searchParams, prop) => searchParams.get(prop),
-            });
-            const file_path = params["file-path"];
-            if (typeof(file_path) === "undefined" || file_path === null)
-            {
-                return;
-            }
-                
-
-            var target = event.target;
-            var next_text = target.innerText;
-            if ( next_text.endsWith("\n") )
-            {
-                next_text = next_text.slice(0, -1);
-            }
-            if ( next_text !== self.text_current_version)
-            {
-                self.text_current_version = next_text;
-                fetch(file_path, {
-                    method: 'POST',
-                    headers: {
-                        'Accept': 'text/plain',
-                        'Content-Type': 'text/plain'
-                    },
-                    body: self.text_current_version
-                });
-                //.then(response => console.log(response));
-            }
-
-            //console.log(event);
-        };
+        document.getElementById("the-span").textContent = parameter_text;
+        js_repl.text_current_version = parameter_text;
     };
 </script>
 <script>
-    js_repl.open_editors = ko.observableArray([]);
+    js_repl.input = function()
+    {
+        if (typeof(event) === "undefined")
+        {
+            return;
+        }
+
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
+        });
+        const file_path = params["file-path"];
+        if (typeof(file_path) === "undefined" || file_path === null)
+        {
+            return;
+        }
+
+        var target = event.target;
+        var next_text = target.innerText;
+        if ( next_text.endsWith("\n") )
+        {
+            next_text = next_text.slice(0, -1);
+        }
+        if ( next_text !== js_repl.text_current_version)
+        {
+            js_repl.text_current_version = next_text;
+            fetch(file_path, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'text/plain',
+                    'Content-Type': 'text/plain'
+                },
+                body: js_repl.text_current_version
+            });
+        }
+    };
 </script>
 <script>
     init = function()
     {
         console.log("init")
         
-        
-        ko.applyBindings(js_repl);
         const params = new Proxy(new URLSearchParams(window.location.search), {
             get: (searchParams, prop) => searchParams.get(prop),
         });
@@ -148,20 +96,14 @@
                 }
             })
             .then(response => response.text())
-            .then(next_stage => js_repl.open_editors.push(new js_repl.editor(next_stage)));
-        }
-        else
-        {
-            js_repl.open_editors.push(new js_repl.editor("hello"));
+            .then(next_stage => js_repl.populate_dom_from_text(next_stage));
         }
     };
 </script>
-
 <script>
     js_repl.editor_on_paste = function()
     {
         event.preventDefault();
-
         let paste = (event.clipboardData || window.clipboardData).getData('text');
         //console.log(paste);
         //console.log(event);
@@ -172,79 +114,25 @@
             document.execCommand('paste', false, paste);
         }
         var scene_editor = document.getElementById("scene-editor");
-
     };
 </script>
 
-<script>
-    just_notes = {};
-</script>
-
-<script>
-    just_notes.shift_canvas_by_delta = function(deltaX, deltaY)
-    {
-        just_notes.debug_logging && console.log({deltaX: deltaX, deltaY: deltaY});
-        for(var individual of js_repl.open_editors())
-        {
-            individual.offsetTop(individual.offsetTop() - deltaY);
-            individual.offsetLeft(individual.offsetLeft(- deltaX));
-
-        }
-    };
-</script>
-
-<script>
-    just_notes.body_on_wheel = function()
-    {
-        just_notes.debug_logging && console.log(event);
-        just_notes.shift_canvas_by_delta(event.deltaX, event.deltaY);
-    };
-</script>
 <body onload="init()"
-    onwheel="just_notes.body_on_wheel()"
-    onkeydown="js_repl['onkeydown']()"
-    onkeyup="js_repl['onkeyup']()"
     style="background-color: black; color: yellow;">
-    <!-- ko foreach: $root.open_editors-->
     <div>
         <span
+        id="the-span"
         class="some"
         spellcheck="false"
         onpaste="js_repl.editor_on_paste()"
+        contenteditable="true"
+        oninput="js_repl.input()"
+        onkeydown="js_repl.input()"
+        onkeyup="js_repl.input()"
         data-bind="
             text: $data.inner_html,
-            attr: {
-                id: $data.mode(),
-                contenteditable: $data.mode()
-            }, 
-            css: { 'available-for-edit' : $root.edit_mode(),
-             'available-for-move' : $root.edit_mode() === false,
-              'prevent-select': $root.edit_mode() === false,
-            },
-            event: {
-                input: $data.input(),
-                keydown: $data.input(),
-                keyup: $data.input()
-            }
-            
             "
         >
-    </span>
-
+        </span>
     </div>
-    
-    <!-- <div style="
-        position: absolute;
-        left: 50%;
-        bottom: 1rem;" > 
-        <div style="
-            transform-origin: bottom center; 
-            position: relative;
-            left:-50%; 
-            bottom: 0px;">
-            [Control + Enter] or [Command + Enter] to switch to edit mode
-        </div>
-    </div> -->
-    <!-- /ko -->
-    
 </body>
