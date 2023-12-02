@@ -1,6 +1,0 @@
-age
-    32
-name
-    Oleksandr
-projects
-    should be populated

@@ -1,5 +1,6 @@
 ﻿// start 2023-06-10 17:02 CET, Munich
 // new version 2023-07-08 Munich
+// new version 2023-12-02 Munich
 using System.Reflection;
 using System.Text.Json;
 using System.Linq;
@@ -34,7 +35,7 @@ class lisperanto
             
             try
             {
-                context.Response.AddHeader("Server", "web-server-created-by-Oleksandr-Kryvonos/v-2023-11-17");
+                context.Response.AddHeader("Server", "web-server-created-by-Oleksandr-Kryvonos/v-2023-12-02");
                 context.Response.AddHeader("Date", DateTime.Now.ToString("yyyy-MM-dd--HH:mm:ss"));
                 if (context.Request.HttpMethod == "GET")
                     await lisperantoGet.Process(root_path, context);

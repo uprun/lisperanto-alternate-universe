@@ -113,7 +113,6 @@
         } else {
             document.execCommand('paste', false, paste);
         }
-        var scene_editor = document.getElementById("scene-editor");
     };
 </script>
 
@@ -129,10 +128,6 @@
         oninput="js_repl.input()"
         onkeydown="js_repl.input()"
         onkeyup="js_repl.input()"
-        data-bind="
-            text: $data.inner_html,
-            "
-        >
-        </span>
+        ></span>
     </div>
 </body>
