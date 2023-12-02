@@ -12,8 +12,9 @@ don't be afraid to use extra libraries - but not many libraries
 here goes the test?
 // 2023-12-02
 I do not exactly remember what I did here ... I need to simplify
+    done
 so, I do not need to add a lot of features
-   No version controll
+   No version control
    nothing fancy
    super-light-weight code
    less dependencies

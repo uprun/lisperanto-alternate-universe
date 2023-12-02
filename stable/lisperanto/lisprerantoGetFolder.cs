@@ -16,7 +16,6 @@ static class lisperantoGetFolder
                 .ToArray();
         using (var memory_stream = new MemoryStream())
         {
-
             using (var stream_writer = new StreamWriter(memory_stream))
             {
                 await stream_writer.WriteLineAsync("<style> html, body {");
@@ -40,10 +39,10 @@ static class lisperantoGetFolder
                     }
                     else
                     {
-                        await stream_writer.WriteLineAsync($"<a href='/universe/js-repl.html?branch=stable&file-path={path_to_respond}?branch=draft'>{file_name}</a>");
+                        await stream_writer.WriteLineAsync($"<a href='/universe/js-repl.html?version=stable&file-path={path_to_respond}'>{file_name}</a>");
                         if (file_name.EndsWith(".html"))
                         {
-                            await stream_writer.WriteLineAsync($"<a href='{path_to_respond}?branch=draft'>[Open app]</a>");
+                            await stream_writer.WriteLineAsync($"<a href='{path_to_respond}'>[Open app]</a>");
                         }
                     }
                     await stream_writer.WriteLineAsync($"</div>");
