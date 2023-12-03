@@ -3,12 +3,27 @@ using System.Net;
 namespace lisperanto;
 static class lisperantoGet
 {
+    private static string RemoveLeadingSlash(string input)
+    {
+        if (input.StartsWith("/"))
+              return input.Substring(1);
+        return input;
+    }
+
     public static async Task Process(string root_path, System.Net.HttpListenerContext context)
     {
         var request = context.Request;
-        string file_path = request.Url.AbsolutePath.Substring(1);
-        var requested_path = Path.Combine(root_path, file_path);
+        string file_path = request.Url.AbsolutePath;
+        string url_decoded = System.Web.HttpUtility.UrlDecode(file_path);
+
+Console.WriteLine($"url_decoded : {url_decoded}");
+
+        url_decoded = RemoveLeadingSlash(url_decoded);
+        url_decoded = RemoveLeadingSlash(url_decoded);
+        var requested_path = Path.Combine(root_path, url_decoded);
         var branch = request.QueryString["branch"] ?? "draft";
+
+Console.WriteLine($"requested path : {requested_path}");
 
         Console.WriteLine($"branch: {branch}");
 
@@ -18,6 +33,7 @@ static class lisperantoGet
             lisperantoGetFolder.Process(root_path, context);
             return;
         }
+Console.WriteLine("Not Directory");
         if (File.Exists(requested_path) == false)
         {
             context.Response.StatusCode = (int)HttpStatusCode.NotFound;

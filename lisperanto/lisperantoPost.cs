@@ -1,13 +1,36 @@
 using System.Linq;
 using System.Net;
+using System.Web;
 namespace lisperanto;
 static class lisperantoPost
 {
+
+    private static string RemoveLeadingSlash(string input)
+    {
+        if (input.StartsWith("/"))
+              return input.Substring(1);
+        return input;
+    }
+
     public static async Task Process(string root_path, System.Net.HttpListenerContext context)
     {
         //https://learn.microsoft.com/en-us/dotnet/api/system.net.httplistenerrequest?view=net-7.0
         var request = context.Request;
         string file_path = request.Url.AbsolutePath.Substring(1);
+
+        // Decode the encoded string.
+
+        string url_decoded = System.Web.HttpUtility.UrlDecode(file_path);
+
+        url_decoded = RemoveLeadingSlash(url_decoded);
+        url_decoded = RemoveLeadingSlash(url_decoded);
+
+
+
+        Console.WriteLine($"Decoded: {url_decoded}");
+        file_path = url_decoded;
+
+
         var requested_path = Path.Combine(root_path, file_path);
         var draft_path = Path.Combine(root_path, ".history", file_path);
         var for_humans_backup_file_path = Path.Combine(root_path, file_path);

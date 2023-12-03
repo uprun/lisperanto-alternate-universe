@@ -1,14 +1,24 @@
 using System.Linq;
 using System.Net;
+using System.Web;
 namespace lisperanto;
 
 static class lisperantoGetFolder
 {
+    private static string RemoveLeadingSlash(string input)
+    {
+        if (input.StartsWith("/"))
+              return input.Substring(1);
+        return input;
+    }
     public static async Task Process(string root_path, System.Net.HttpListenerContext context)
     {
         var request = context.Request;
-        string file_path = request.Url.AbsolutePath.Substring(1);
-        var requested_path = Path.Combine(root_path, file_path);
+        string file_path = request.Url.AbsolutePath;
+        string url_decoded = System.Web.HttpUtility.UrlDecode(file_path);
+        url_decoded = RemoveLeadingSlash(url_decoded);
+        url_decoded = RemoveLeadingSlash(url_decoded);
+        var requested_path = Path.Combine(root_path, url_decoded);
 
         DirectoryInfo dir = new DirectoryInfo(requested_path);
             var result = dir.GetFileSystemInfos()
@@ -25,6 +35,8 @@ static class lisperantoGetFolder
                 await stream_writer.WriteLineAsync("margin: 0;");
                 await stream_writer.WriteLineAsync("}</style>");
                 await stream_writer.WriteLineAsync("<style> a { color: yellow; } </style>");
+                await stream_writer.WriteLineAsync("<meta charset=\"utf-8\">");
+
                 await stream_writer.WriteLineAsync($"<body style='background-color: black; color: yellow;'>");
                 await stream_writer.WriteLineAsync($"<div><a href='{Path.Join(request.Url.AbsolutePath, "..")}'>..</a></div>");
                 for (int i = 0; i < result.Length; ++i)
@@ -32,17 +44,19 @@ static class lisperantoGetFolder
                     FileSystemInfo fileSystemInfo = result[i];
                     var file_name = Path.GetFileName(fileSystemInfo.Name);
                     var path_to_respond = Path.Join(request.Url.AbsolutePath, file_name);
+                    string myEncodedString = HttpUtility.HtmlEncode(file_name);
+                    string url_encoded = System.Web.HttpUtility.UrlEncode(path_to_respond);
                     await stream_writer.WriteLineAsync($"<div>");
                     if (Directory.Exists(fileSystemInfo.FullName))
                     {
-                        await stream_writer.WriteLineAsync($"<a href='{path_to_respond}'>{file_name}</a>");
+                        await stream_writer.WriteLineAsync($"<a href='{url_encoded}'>{myEncodedString}</a>");
                     }
                     else
                     {
-                        await stream_writer.WriteLineAsync($"<a href='/universe/js-repl.html?version=stable&file-path={path_to_respond}'>{file_name}</a>");
+                        await stream_writer.WriteLineAsync($"<a href='/universe/js-repl.html?version=stable&file-path={url_encoded}'>{myEncodedString}</a>");
                         if (file_name.EndsWith(".html"))
                         {
-                            await stream_writer.WriteLineAsync($"<a href='{path_to_respond}'>[Open app]</a>");
+                            await stream_writer.WriteLineAsync($"<a href='{url_encoded}'>[Open app]</a>");
                         }
                     }
                     await stream_writer.WriteLineAsync($"</div>");
@@ -50,7 +64,7 @@ static class lisperantoGetFolder
                 await stream_writer.WriteLineAsync($"</body>");
             }
             await context.Response.OutputStream.WriteAsync(memory_stream.ToArray());
-            context.Response.ContentType = "text/plain";
+            context.Response.ContentType = "text/html";
             context.Response.StatusCode = (int)HttpStatusCode.OK;
             context.Response.Close();
         }
