@@ -1,7 +1,17 @@
-+ decode urls
+ G+ decode urls
 - find backup servers in local network
+  > with \python3 -m http.server 9000\ everything is visible in inner network
 - push changes to backup servers
 - create new file with a time-stamp
 - create copy of a folder
 - rename file  
 - move history folder closer to modifed file
+- protect some files from accidental updates
+- create actual js-repl
+- create a console web-terminal
+- create tree-view of the folder with preview of files??
+  > Do I really want that?
+  > I might want to show latest modified files
+- check why text is copied with more new-lines
+- translate everything to Python because in Python I can bind to http://[::]:9001 url and it visible from tablet on same wifi
+- show file-name on top of the editor
