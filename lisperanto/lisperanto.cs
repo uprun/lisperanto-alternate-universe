@@ -36,22 +36,14 @@ public static List<string> GetLocalIPAddress()
         var root_path = root_directoryInfo.FullName;
 
 
-        int port_to_start_with = 9001;
+        string port_to_start_with = "9003";
         var local_hosts = GetLocalIPAddress().Select(ip => $"http://{ip}:{port_to_start_with}/").ToList();
 
         var host = $"http://{this_directory_info.Name}.localhost:" + port_to_start_with.ToString() + "/";
-        host = $"http://localhost:9001/";
-        //var host = $"http://[::1]:{port_to_start_with}/";
-             Console.WriteLine($"Server available at: {host}");
+        host = $"http://localhost:{port_to_start_with}/";
+        Console.WriteLine($"Server available at: {host}");
 
 
-/*       
-foreach(var host in local_hosts)
-        {
-             _listener.Prefixes.Add(host);
-             Console.WriteLine($"Server available at: {host}");
-        }
-*/
              _listener.Prefixes.Add(host);
         _listener.Start();
 

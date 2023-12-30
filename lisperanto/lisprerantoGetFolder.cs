@@ -11,7 +11,7 @@ static class lisperantoGetFolder
               return input.Substring(1);
         return input;
     }
-    public static async Task Process(string root_path, System.Net.HttpListenerContext context)
+    public static async Task ProcessAsync(string root_path, System.Net.HttpListenerContext context)
     {
         var request = context.Request;
         string file_path = request.Url.AbsolutePath;
@@ -38,12 +38,18 @@ static class lisperantoGetFolder
                 await stream_writer.WriteLineAsync("<meta charset=\"utf-8\">");
 
                 await stream_writer.WriteLineAsync($"<body style='background-color: black; color: yellow;'>");
-                await stream_writer.WriteLineAsync($"<div><a href='{Path.Join(request.Url.AbsolutePath, "..")}'>..</a></div>");
+                await stream_writer.WriteLineAsync($"<div><a href='{Path.Join(requested_path, "..")}'>..</a></div>");
                 for (int i = 0; i < result.Length; ++i)
                 {
                     FileSystemInfo fileSystemInfo = result[i];
                     var file_name = Path.GetFileName(fileSystemInfo.Name);
-                    var path_to_respond = Path.Join(request.Url.AbsolutePath, file_name);
+
+                    Console.WriteLine($"Processing {file_name}");
+
+                    var path_to_respond = "/" + Path.Join(url_decoded, file_name);
+
+Console.WriteLine($"path_to_respond {path_to_respond}");
+
                     string myEncodedString = HttpUtility.HtmlEncode(file_name);
                     string url_encoded = System.Web.HttpUtility.UrlEncode(path_to_respond);
                     await stream_writer.WriteLineAsync($"<div>");
@@ -53,7 +59,7 @@ static class lisperantoGetFolder
                     }
                     else
                     {
-                        await stream_writer.WriteLineAsync($"<a href='/universe/js-repl.html?version=stable&file-path={url_encoded}'>{myEncodedString}</a>");
+                        await stream_writer.WriteLineAsync($"<a href='/universe/js-repl.html?file-path={url_encoded}'>{myEncodedString}</a>");
                         if (file_name.EndsWith(".html"))
                         {
                             await stream_writer.WriteLineAsync($"<a href='{url_encoded}'>[Open app]</a>");

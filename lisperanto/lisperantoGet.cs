@@ -21,16 +21,13 @@ Console.WriteLine($"url_decoded : {url_decoded}");
         url_decoded = RemoveLeadingSlash(url_decoded);
         url_decoded = RemoveLeadingSlash(url_decoded);
         var requested_path = Path.Combine(root_path, url_decoded);
-        var branch = request.QueryString["branch"] ?? "draft";
 
 Console.WriteLine($"requested path : {requested_path}");
-
-        Console.WriteLine($"branch: {branch}");
 
 
         if (Directory.Exists(requested_path))
         {
-            lisperantoGetFolder.Process(root_path, context);
+            await lisperantoGetFolder.ProcessAsync(root_path, context);
             return;
         }
 Console.WriteLine("Not Directory");
@@ -43,10 +40,12 @@ Console.WriteLine("Not Directory");
 
         byte[] file_content = await File.ReadAllBytesAsync(requested_path);
         var extension = Path.GetExtension(request.Url.AbsolutePath);
+
         Dictionary<string, string> lookup_for_extension = new Dictionary<string, string>();
         lookup_for_extension.Add(".html", "text/html");
         lookup_for_extension.Add(".js", "application/javascript");
         lookup_for_extension.Add(".txt", "text/plain");
+
         if (lookup_for_extension.ContainsKey(extension))
         {
             context.Response.ContentType = lookup_for_extension[extension];
