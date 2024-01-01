@@ -38,7 +38,7 @@ static class lisperantoGetFolder
                 await stream_writer.WriteLineAsync("<meta charset=\"utf-8\">");
 
                 await stream_writer.WriteLineAsync($"<body style='background-color: black; color: yellow;'>");
-                await stream_writer.WriteLineAsync($"<div><a href='{Path.Join(requested_path, "..")}'>..</a></div>");
+                await stream_writer.WriteLineAsync($"<div><a href='/{Path.Join(url_decoded, "..")}'>..</a></div>");
                 for (int i = 0; i < result.Length; ++i)
                 {
                     FileSystemInfo fileSystemInfo = result[i];
