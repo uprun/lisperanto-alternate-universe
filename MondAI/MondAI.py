@@ -1,8 +1,10 @@
 import re
 from int_abstract_out import *
 from dd_parse_file import *
+from dd_save_to_file import *
 print('MondAI welcomes you')
 parsed = dd_parse_file("./self_knowledge/self.dd")
+dd_save_to_file(parsed, "./self_knowledge/self_check_3.dd")
 print (parsed)
 
 def split_words(input_string):
