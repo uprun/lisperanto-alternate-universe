@@ -32,7 +32,7 @@ def try_to_analyze(words):
         return
     if len(words) == 4 and words[0] == "+":
         print("adding connection", words[1:])
-        add_connection(words[1], words[2], words[3], _knowledge)
+        add_connection(words[1], words[2], words[3], _knowledge, _database)
         return
     print("unknown command")
 
