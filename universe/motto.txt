@@ -1,0 +1,2 @@
+1) Develop every program within 1 day [except WebPad]
+2) Use 10 to 40 lines of code per program/function/method

@@ -1,0 +1,21 @@
+--name MondAI
+--start-date 2023-12-30
+--is AI-expert-system
+--is program
+--is algorithm
+--original-author Oleksandr Kryvonos
+--japanese-name モンダイ
+
+name MondAI
+start-date 2023-12-30
+is AI-expert-system
+is program
+is algorithm
+original-author Oleksandr Kryvonos
+japanese-name モンダイ
+-
+name Oleksandr
+surname Kryvonos
+date-of-birth 1991-03-09
+is human
+-

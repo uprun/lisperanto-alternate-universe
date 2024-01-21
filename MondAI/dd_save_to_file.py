@@ -4,7 +4,7 @@ def dd_save_to_file(dictionary_of_lists, file_path):
         key = e[0] + '\n'
         if key.startswith('--') == False:
             key = '--' + key
-        print('Processing key', key)
+        #print('Processing key', key)
         file1.write(key)
         for line in e[1]:
             file1.write(line + '\n')

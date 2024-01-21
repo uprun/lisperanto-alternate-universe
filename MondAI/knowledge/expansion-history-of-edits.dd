@@ -1,0 +1,9 @@
+--is
+task
+array
+--file-extension
+.eh
+--array-item-format
+dash-dash
+--separator-between-array-elements
+====
