@@ -1,11 +1,11 @@
-from dd_parse_file import *
+from parse_ddlog import *
 import pathlib
 
 def parse_knowledge():
-    files = [f for f in pathlib.Path("./knowledge/").iterdir() if f.is_file() and f.suffix == ".dd"]
+    files = [f for f in pathlib.Path("./knowledge/").iterdir() if f.is_file() and f.suffix == ".ddlog"]
 
     knowledge = {}
 
     for file in files:
-        knowledge[file.stem] = dd_parse_file('./knowledge/' + file.name)
+        knowledge[file.stem] = parse_ddlog('./knowledge/' + file.name)
     return knowledge

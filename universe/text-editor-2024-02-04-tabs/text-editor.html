@@ -1,0 +1,179 @@
+<style>
+    html, 
+    body {
+        height: 100%;
+        width: 100%;
+        font-family: 'Input Mono', monospace;
+        margin: 0;
+    }
+</style>
+<style>
+    .some {
+        left: 0px;
+        right: 0px;
+        position: relative;
+        width: max-content;
+        min-width: 5rem;
+        min-height: 5rem;
+        border: 0.2rem;
+        border-radius: 0.2rem;
+        white-space: break-spaces;
+        display: block;
+        color: inherit;
+        padding: 0.5rem;
+        outline: 0px solid transparent; /* prevent blue outline */
+        cursor: auto;
+    }
+</style>
+<script>
+    js_repl = {};
+</script>
+<script>
+    js_repl.text_current_version = undefined;
+    js_repl.populate_dom_from_text = function(parameter_text)
+    {
+        if (parameter_text.endsWith("\n"))
+        {
+            parameter_text += "\n";
+        }
+        document.getElementById("the-span").textContent = parameter_text;
+        js_repl.text_current_version = parameter_text;
+    };
+</script>
+<script>
+    js_repl.tabulate_handler = function(selection)
+    {
+        event.preventDefault();
+        var start = selection.anchorOffset;
+        var finish = selection.focusOffset;
+        
+        if ( finish <= start)
+        {
+            var swap = start;
+            start = finish;
+            finish = swap;
+        }
+
+        var target = event.target;
+        var next_text = target.innerText;
+
+        if (event.shiftKey)
+        {
+            selection.modify("extend", "left", "character")
+            selection.modify("extend", "left", "character")
+            selection.modify("extend", "left", "character")
+            selection.modify("extend", "left", "character")
+
+            //document.execCommand('cut')
+            document.execCommand('insertText', false, "");
+        }
+        else
+        {
+             let paste = "    ";
+             if (document.queryCommandSupported('insertText')) 
+             {
+                 document.execCommand('insertText', false, paste);
+             } else {
+                 document.execCommand('paste', false, paste);
+             }
+        }  
+    };
+</script>
+<script>
+    js_repl.input = function()
+    {
+        if (typeof(event) === "undefined")
+        {
+            return;
+        }
+
+        var selection = document.getSelection();
+        console.log({event: event, selection: selection});
+        if(event.key == "Tab")
+        {
+            console.log("Tab")
+            js_repl.tabulate_handler(selection);
+        }
+
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
+        });
+        const file_path = params["file-path"];
+        if (typeof(file_path) === "undefined" || file_path === null)
+        {
+            return;
+        }
+
+        var target = event.target;
+        var next_text = target.innerText;
+        if ( next_text.endsWith("\n") )
+        {
+            next_text = next_text.slice(0, -1);
+        }
+        if ( next_text !== js_repl.text_current_version)
+        {
+            js_repl.text_current_version = next_text;
+            fetch(file_path, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'text/plain',
+                    'Content-Type': 'text/plain'
+                },
+                body: js_repl.text_current_version
+            });
+        }
+    };
+</script>
+<script>
+    init = function()
+    {
+        console.log("init")
+        
+        const params = new Proxy(new URLSearchParams(window.location.search), {
+            get: (searchParams, prop) => searchParams.get(prop),
+        });
+        const file_path = params["file-path"];
+        if (typeof(file_path) !== "undefined" && file_path !== null)
+        {
+            fetch(file_path, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'text/plain',
+                    'Content-Type': 'text/plain'
+                }
+            })
+            .then(response => response.text())
+            .then(next_stage => js_repl.populate_dom_from_text(next_stage));
+        }
+    };
+</script>
+<script>
+    js_repl.editor_on_paste = function()
+    {
+        event.preventDefault();
+        let paste = (event.clipboardData || window.clipboardData).getData('text');
+        //console.log(paste);
+        //console.log(event);
+        if (document.queryCommandSupported('insertText')) 
+        {
+            document.execCommand('insertText', false, paste);
+        } else {
+            document.execCommand('paste', false, paste);
+        }
+    };
+</script>
+
+<body onload="init()"
+    style="background-color: black; color: yellow;">
+    <div>
+        <span
+        id="the-span"
+        class="some"
+        spellcheck="false"
+        onpaste="js_repl.editor_on_paste()"
+        contenteditable="true"
+        oninput="js_repl.input()"
+        onkeydown="js_repl.input()"
+        ></span>
+    </div>
+</body>
