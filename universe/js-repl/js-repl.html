@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>to-buy</title>
+    <title>js-repl</title>
 </head>
 
 <style>
@@ -114,7 +114,19 @@ tobuy.create_tobuy_element = function(text, state)
     clone.id = "";
     clone.classList.remove("example");
     var item = helpers.find_child(clone, helpers.with_class("item"));
+    var eval_result = helpers.find_child(clone, helpers.with_class("eval-result"));
+    var result = "";
+    try
+    {
+        result = eval(text);
+    }
+    catch(e)
+    {
+        console.log(e);
+        result = "failed";
+    }
     item.innerText = text;
+    eval_result.innerText = result;
     template.parentNode.appendChild(clone);
 };
 
@@ -173,6 +185,7 @@ tobuy.on_key_press_for_new = function()
 <div id="list-of-to-buy-elements" class="prevent-select list-of-to-buy-elements">
     <div id="example-to-buy" class="prevent-select example fit-content to-buy-entry" data-done="false" ondblclick="tobuy.mark_done()">
         <span class="item" ondblclick="tobuy.pass_through_event()">oranges</span>
+        <span class="eval-result" ondblclick="tobuy.pass_through_event()">oranges</span>
     </div>
 </div>
 <div 
