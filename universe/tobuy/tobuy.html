@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" id="html">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>to-buy</title>
+</head>
+
+<style>
+.example {
+    display: none;
+}
+.hidden {
+    display: none;
+}
+.prevent-select {
+        -webkit-user-select: none; /* Safari */
+        -ms-user-select: none; /* IE 10 and IE 11 */
+        user-select: none; /* Standard syntax */
+    }
+.input-for-to-buy-items {
+    min-height: 1rem;
+    min-width: 10rem;
+    width: calc(100% - 3rem);
+    display: block;
+    border-width: 0.2rem;
+    border-color: purple;
+    border-style: solid;
+    border-radius: 0.2rem;
+    outline: none;
+    margin: auto;
+    font-size: 1.3rem;
+    position: absolute;
+    bottom: 0.5rem;
+    margin-left: 1.5rem;
+    overflow: scroll;
+}
+.margin-auto {
+    margin: auto;
+}
+.fit-content {
+    width: fit-content;
+}
+.list-of-to-buy-elements {
+    width: calc(100% - 3rem);
+    max-height: calc(100% - 3rem);
+    position: absolute;
+    bottom: 3rem;
+    left: 1.5rem;
+    margin: auto;
+    overflow-y: scroll;
+}
+.to-buy-entry {
+    margin-bottom:0.5rem;
+    margin-top: 0.5rem;
+}
+.item {
+    font-size: 1.3rem;
+}
+</style>
+
+<script>
+tobuy = {};
+tobuy.set_state = function(to_buy_node, mark_done)
+{
+    if (mark_done)
+    {
+        to_buy_node.dataset.done = true;
+        to_buy_node.classList.add("margin-auto");
+    }
+    else
+    {
+        to_buy_node.dataset.done = false;
+        to_buy_node.classList.remove("margin-auto");
+    }
+};
+tobuy.mark_done = function()
+{
+    var target = event.currentTarget;
+
+    tobuy.set_state(target, target.dataset.done === "false")
+};
+</script>
+<script>
+helpers = {};
+helpers.find_child = function(element, predicate)
+{
+    var result = Array.from(element.childNodes).find(child => predicate(child));
+    return result;
+};
+</script>
+
+<script>
+tobuy.pass_through_event = function()
+{
+    console.log("pass_through_event");
+    return true;
+};
+</script>
+<script>
+helpers.with_class = function(class_name)
+{
+    var lambda = (e) => typeof(e.classList) !== "undefined" && Array.from(e.classList).some(c => c == class_name);
+    return lambda;
+};
+
+</script>
+<script>
+tobuy.create_tobuy_element = function(text, state)
+{
+    var template = document.getElementById('example-to-buy');
+    var clone = template.cloneNode(true);
+    clone.id = "";
+    clone.classList.remove("example");
+    var item = helpers.find_child(clone, helpers.with_class("item"));
+    item.innerText = text;
+    template.parentNode.appendChild(clone);
+};
+
+</script>
+<script>
+tobuy.on_key_down_for_new = function()
+{
+    if (event.key === "Enter")
+    {
+        var text = event.originalTarget.innerText;
+        text = text.trim();
+        if ( text !== "")
+        {
+            tobuy.create_tobuy_element(text);
+        }
+        event.originalTarget.innerText = "";
+        event.preventDefault();
+        return false;
+    }
+}
+</script>
+<script>
+tobuy.on_key_up_for_new = function()
+{
+    if (event.key === "Enter")
+    {
+        event.originalTarget.innerText = "";
+    }
+}
+</script>
+<script>
+tobuy.on_key_press_for_new = function()
+{
+    var target = event.originalTarget || event.currentTarget;
+    if(event.keyCode == 13)
+    {
+        var text = target.innerText;
+        text = text.trim();
+        if ( text !== "")
+        {
+            tobuy.create_tobuy_element(text);
+        }
+        target.innerText = "";
+        event.preventDefault();
+        return false;
+    }
+};
+</script>
+
+<body
+    class="prevent-select"
+    style="
+        background-color: black;
+        color: orange;
+        margin: 0;" >
+<div id="list-of-to-buy-elements" class="prevent-select list-of-to-buy-elements">
+    <div id="example-to-buy" class="prevent-select example fit-content to-buy-entry" data-done="false" ondblclick="tobuy.mark_done()">
+        <span class="item" ondblclick="tobuy.pass_through_event()">oranges</span>
+    </div>
+</div>
+<div 
+    class="input-for-to-buy-items prevent-select" 
+    contenteditable="true" 
+    onkeydown="tobuy.on_key_down_for_new()"
+    onkeypress="tobuy.on_key_press_for_new()"
+    onkeyup="tobuy.on_key_up_for_new()"></div>
+</body>
+</html>
