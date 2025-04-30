@@ -32,7 +32,7 @@ func viewHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprintf(w, "Hi there, I love %s!", r.URL.Path[1:])
+    fmt.Fprintf(w, "Hi there, this a simple http server to view content of the files!", r.URL.Path[1:])
 }
 
 func main() {
